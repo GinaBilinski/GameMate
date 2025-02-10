@@ -1,9 +1,9 @@
 import { View, Text } from "react-native";
 
-export default function GamesScreen() {
+export default function ChatScreen() {
   return (
     <View>
-      <Text>🎮 Spiele</Text>
+      <Text>Chat</Text>
     </View>
   );
 }

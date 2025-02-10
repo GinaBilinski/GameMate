@@ -25,20 +25,20 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="games"
+        name="neueGruppe"
         options={{
-          title: "Spiele",
+          title: "Neue Gruppe",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="game-controller" size={size} color={color} />
+            <Ionicons name="people" size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="schedule"
+        name="chat"
         options={{
-          title: "Event Planen",
+          title: "Chat",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calendar" size={size} color={color} />
+            <Ionicons name="chatbubble" size={size} color={color} />
           ),
         }}
       />

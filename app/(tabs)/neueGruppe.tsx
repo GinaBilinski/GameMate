@@ -1,9 +1,9 @@
 import { View, Text } from "react-native";
 
-export default function ScheduleScreen() {
+export default function neueGruppeScreen() {
   return (
     <View>
-      <Text>📅 Event Planen</Text>
+      <Text>Gruppe erstellen</Text>
     </View>
   );
 }
