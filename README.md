@@ -1,50 +1,23 @@
-# Welcome to your Expo app 👋
+# authStore.ts
+Login und logout Logik
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+# eventStore.ts
+Speichert alle Events in der App. Events gehören zu einer Gruppe und enthalten Informationen wie Host, Datum, Teilnehmer, Spiele und Essen.
+Hier würden vermutlich auch die Funktionen für Abstimmungen und abwechselnde Gastgeber eingepflegt werden.
 
-## Get started
+Firestore speichert die Events, während Zustand den schnellen Zugriff im Frontend ermöglicht.
+# groupStore.ts
+Speichert alle Gruppen, die erstellt wurden. Eine Gruppe hat aktuell Mitglieder und Events
+Hier würde vermutlich auch die Chat Logic implementiert werden.
 
-1. Install dependencies
+Gruppen werden in Firestore verwaltet und in Zustand für schnelle Abfragen zwischengespeichert.
+# userStore.ts
+Speichert alle Benutzer. Verknüpft Benutzer mit Gruppen und Events über IDs (nicht über Types um doppelte Daten zu vermeiden, ist effizienter).
 
-   ```bash
-   npm install
-   ```
+# firebaseConfig.ts
+Enthält die Firebase-Konfiguration für Authentifizierung und Firestore. Ist noch nicht eingerichtet.
 
-2. Start the app
 
-   ```bash
-    npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+To do:
+- Aktuell würden alle Gruppen geladen werden. Das ist quatsch, es dürfen nur die Gruppen geladen werden, in der man Teilnehmer ist.
+- Vieles mehr :D
