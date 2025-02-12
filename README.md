@@ -1,3 +1,18 @@
+# Firebase Einrichtung für das Projekt
+1. Ich muss dich in Firebase mit deiner Gmail als Owner hinzufügen.
+2. Du musst eine .env Datei im Root-Ordner deines Projekts erstellen.
+3. Die Firebase-Schlüssel findest du in Firebase → Projekteinstellungen
+        FIREBASE_API_KEY=XXXXXXXXXXXXXXXXXXXX
+        FIREBASE_AUTH_DOMAIN=XXXXXXXXXXXXXXXXXXXX
+        FIREBASE_PROJECT_ID=XXXXXXXXXXXXXXXXXXXX
+        FIREBASE_STORAGE_BUCKET=XXXXXXXXXXXXXXXXXXXX
+        FIREBASE_MESSAGING_SENDER_ID=XXXXXXXXXXXX
+        FIREBASE_APP_ID=1:XXXXXXXXXXXX:web:XXXXXXXXXXXX
+        FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX
+4. "npm install react-native-dotenv" ausführen --> Bibliothek ermöglicht Umgebungsvariablen aus einer .env-Datei in deinem React-Native-Projekt zu nutzen
+- gina
+
+
 # authStore.ts
 Login und logout Logik
 

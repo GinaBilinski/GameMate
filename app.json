@@ -16,10 +16,8 @@
         "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#ffffff"
       }
-
     },
     "plugins": [
-      "expo-router",
       [
         "expo-splash-screen",
         {
@@ -31,6 +29,12 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "fonts": [
+      {
+        "fontFamily": "SpaceMono",
+        "src": "./assets/fonts/SpaceMono-Regular.ttf"
+      }
+    ]
   }
 }
