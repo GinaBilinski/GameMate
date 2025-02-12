@@ -36,11 +36,12 @@ type GroupStore = {
  - nico
 */
 export const useGroupStore = create<GroupStore>((set) => ({
+
   groups: [],
 
   /*
    Currently loading ALL groups. Needs to be refactored,
-   so it only loads the groups where the logged-in user is a member!
+   so it only loads the groups where the logged-in user is a member!**
    load all groups from Firestore and update state
    - nico
   */
