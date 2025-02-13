@@ -4,8 +4,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
-import HomeScreen from "./screens/home";
-import FirebaseTestScreen from "./screens/firebaseTest";
+import Navigation from "./navigation/Navigation";
 
 const Stack = createStackNavigator();
 
@@ -25,12 +24,5 @@ export default function App() {
   
 
   // Navigation der App mit Stack-Navigation -gina
-  return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Firebase Test" component={FirebaseTestScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
+  return <Navigation />;
 }

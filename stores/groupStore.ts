@@ -59,14 +59,14 @@ export const useGroupStore = create<GroupStore>((set) => ({
    add a new group to Firestore and update state
    - nico
   */
-  addGroup: async (group) => {
+   addGroup: async (group) => {
     try {
       const docRef = await addDoc(collection(db, "groups"), group);
       set((state) => ({ groups: [...state.groups, { ...group, id: docRef.id }] }));
     } catch (error) {
       console.error("Failed to save group:", error);
     }
-  },
+},
   /*
    remove a group from Firestore and update state
    - nico

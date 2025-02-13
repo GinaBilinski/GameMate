@@ -7,7 +7,7 @@ import { useGroupStore } from "../stores/groupStore";
  useGroupStore() accesses the Zustand store (groupStore.ts) to get the group parameter
  - nico
 */
-export default function GroupOverview() {
+export default function GroupOverviewScreen() {
   const route = useRoute();
   const { groupId } = route.params as { groupId: string };
   const group = useGroupStore((state) => state.groups.find((g) => g.id === groupId));
