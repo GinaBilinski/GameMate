@@ -1,3 +1,14 @@
+-----------------------------------------
+Nico / 10.02.2025
+# HomeScreen, CreateGroupScreen und GroupOverview basics
+Es kann jetzt eine Gruppe erstellt werden und es werden automatisch alle Gruppen aus der Firestore Database gezogen und angezeigt.
+Hierfür habe ich GroupTile.tsx in components erstellt. Diese Tiles sind klickbar und leiten einen an die Gruppenübersicht weiter :)
+
+# Navigation.tsx erstellt
+Ich habe die Navigation aus der app.tsx ausgelagert.
+
+-----------------------------------------
+Gina / 12.02.2025
 # Firebase Einrichtung für das Projekt
 1. Ich muss dich in Firebase mit deiner Gmail als Owner hinzufügen.
 2. Du musst eine .env Datei im Root-Ordner deines Projekts erstellen.
@@ -12,7 +23,8 @@
 4. "npm install react-native-dotenv" ausführen --> Bibliothek ermöglicht Umgebungsvariablen aus einer .env-Datei in deinem React-Native-Projekt zu nutzen
 - gina
 
-
+-----------------------------------------
+Nico / 10.02.2025
 # authStore.ts
 Login und logout Logik
 
@@ -31,8 +43,3 @@ Speichert alle Benutzer. Verknüpft Benutzer mit Gruppen und Events über IDs (n
 
 # firebaseConfig.ts
 Enthält die Firebase-Konfiguration für Authentifizierung und Firestore. Ist noch nicht eingerichtet.
-
-
-To do:
-- Aktuell würden alle Gruppen geladen werden. Das ist quatsch, es dürfen nur die Gruppen geladen werden, in der man Teilnehmer ist.
-- Vieles mehr :D
