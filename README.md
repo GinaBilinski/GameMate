@@ -1,5 +1,5 @@
 -----------------------------------------
-Nico / 10.02.2025
+Nico / 13.02.2025
 # HomeScreen, CreateGroupScreen und GroupOverview basics
 Es kann jetzt eine Gruppe erstellt werden und es werden automatisch alle Gruppen aus der Firestore Database gezogen und angezeigt.
 Hierfür habe ich GroupTile.tsx in components erstellt. Diese Tiles sind klickbar und leiten einen an die Gruppenübersicht weiter :)
