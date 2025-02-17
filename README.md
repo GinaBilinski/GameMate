@@ -1,3 +1,10 @@
+Gian / 17.02.2025
+# Navigation.tsx, home.tsx
+Ich habe eine Drawer-Navigation eingefügt (Seitenmenü mit Hamburger-Icon) 
+
+# Authentication.tsx, Settings.tsx
+Beide Unterseiten erstellt 
+
 -----------------------------------------
 Nico / 13.02.2025
 # HomeScreen, CreateGroupScreen und GroupOverview basics

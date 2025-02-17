@@ -1,3 +1,4 @@
+import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
 import HomeScreen from "../screens/home";
@@ -9,19 +10,22 @@ import PastEventsScreen from "../screens/PastEvents";
 import CreateEventScreen from "../screens/CreateEvent";
 import NextEventsScreen from "../screens/NextEvents";
 import EventDetailsScreen from "../screens/EventDetails";
+import SettingsScreen from "../screens/Settings";
+import LoginLogoutScreen from "../screens/Authentication";
+import { Ionicons } from "@expo/vector-icons";
 
-// Define navigation types
+// --- RootStackParamList (NEU: Definiert alle möglichen Routen + Parameter) ---
 export type RootStackParamList = {
-  Home: undefined;
+  Main: undefined;
   CreateGroup: undefined;
   GroupOverview: { groupId: string };
   GroupMembers: { groupId: string };
   Chat: { groupId: string };
   CreateEvent: { groupId: string };
-  PastEvents: { groupId: string };
-  NextEvents: { groupId: string }; 
+  PastEvents: undefined;
+  NextEvents: { groupId: string };
   EventDetails: { 
-    eventId: string; 
+    eventId: string;
     groupId: string;
     date: string;
     time: string;
@@ -29,13 +33,51 @@ export type RootStackParamList = {
   };
 };
 
-const Stack = createStackNavigator<RootStackParamList>();
+const Drawer = createDrawerNavigator();
+const Stack = createStackNavigator();
 
+// --- Drawer Navigation ---
+function MainDrawer() {
+  return (
+    <Drawer.Navigator
+      screenOptions={{
+        headerShown: false, 
+        drawerActiveTintColor: "white",
+        drawerInactiveTintColor: "#ccc",
+        drawerStyle: { backgroundColor: "#1C313B" },
+      }}
+    >
+      <Drawer.Screen 
+        name="Gruppenübersicht" 
+        component={HomeScreen} 
+        options={{
+          drawerIcon: ({ color }) => <Ionicons name="home-outline" size={22} color={color} />,
+        }}
+      />
+      <Drawer.Screen 
+        name="Einstellungen" 
+        component={SettingsScreen} 
+        options={{
+          drawerIcon: ({ color }) => <Ionicons name="settings-outline" size={22} color={color} />,
+        }}
+      />
+      <Drawer.Screen 
+        name="Login / Logout" 
+        component={LoginLogoutScreen} 
+        options={{
+          drawerIcon: ({ color }) => <Ionicons name="log-in-outline" size={22} color={color} />,
+        }}
+      />
+    </Drawer.Navigator>
+  );
+}
+
+// --- Stack für Unterseiten ---
 export default function Navigation() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Main" component={MainDrawer} />
         <Stack.Screen name="CreateGroup" component={CreateGroupScreen} />
         <Stack.Screen name="GroupOverview" component={GroupOverviewScreen} />
         <Stack.Screen name="NextEvents" component={NextEventsScreen} />

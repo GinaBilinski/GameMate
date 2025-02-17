@@ -1,5 +1,5 @@
 import { View, SafeAreaView, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { NavigationProp, useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute, NavigationProp } from "@react-navigation/native";
 import { useGroupStore } from "../stores/groupStore";
 import { RootStackParamList } from "../navigation/Navigation";
 
@@ -7,6 +7,7 @@ import { RootStackParamList } from "../navigation/Navigation";
  Screen Gruppenübersicht
  - gina
 */
+
 // Dummy-Daten für geplante Events
 const futureEvents = [
   { id: "1", date: "20.02.2025", time: "18:00", host: "Max Mustermann" },
@@ -29,6 +30,7 @@ export default function GroupOverviewScreen() {
         <Text style={styles.title}>{group?.name}</Text>
       </View>
 
+      {/* Geplante Events */}
       <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("NextEvents", { groupId })}>
         <Text style={styles.cardTitle}>Geplante Events</Text>
         {futureEvents.length > 0 ? (
@@ -58,7 +60,7 @@ export default function GroupOverviewScreen() {
       </TouchableOpacity>
 
       {/* Vergangene Events */}
-      <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("PastEvents", { groupId })}>
+      <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("PastEvents")}>
         <Text style={styles.cardTitle}>Vergangene Events</Text>
       </TouchableOpacity>
     </SafeAreaView>

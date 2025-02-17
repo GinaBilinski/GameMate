@@ -1,15 +1,9 @@
-import { View, FlatList, StyleSheet, Text, Button, TouchableOpacity, Image } from "react-native";
-import { useEffect } from "react";
-import { useNavigation, NavigationProp } from "@react-navigation/native";
+import React, { useEffect } from "react";
+import { View, FlatList, StyleSheet, Text, TouchableOpacity, Image } from "react-native";
 import { useGroupStore } from "../stores/groupStore";
 import GroupTile from "../components/GroupTile";
+import { Ionicons } from "@expo/vector-icons";
 
-import { RootStackParamList } from "../navigation/Navigation";
-
-/*
- Displays all groups in a list with a custom header
- - nico
-*/
 export default function HomeScreen({ navigation }: { navigation: any }) {
   const groups = useGroupStore((state) => state.groups);
   const loadGroups = useGroupStore((state) => state.loadGroups);
@@ -20,14 +14,18 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
 
   return (
     <View style={styles.container}>
-      {/* Header with Create Button */}
+      {/* Header mit Hamburger-Button */}
       <View style={styles.headerContainer}>
+        <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuButton}>
+          <Ionicons name="menu" size={28} color="white" />
+        </TouchableOpacity>
         <Text style={styles.headerText}>Gruppenübersicht</Text>
         <TouchableOpacity onPress={() => navigation.navigate("CreateGroup")}>
           <Image source={require("../assets/images/plus.png")} style={styles.iconImage} />
         </TouchableOpacity>
       </View>
-      {/* Group List. eventHost and eventDate are currently dummies */}
+
+      {/* Gruppenliste */}
       <FlatList
         data={groups}
         keyExtractor={(item) => item.id ?? Math.random().toString()}
@@ -43,6 +41,8 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
     </View>
   );
 }
+
+// --- Styles ---
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -56,6 +56,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
     paddingVertical: 10,
     marginTop: 25,
+  },
+  menuButton: {
+    padding: 10,
   },
   headerText: {
     fontSize: 20,

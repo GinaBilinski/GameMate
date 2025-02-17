@@ -1,5 +1,5 @@
 import { View, SafeAreaView, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { NavigationProp, useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute, NavigationProp } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/Navigation";
 
 /*
@@ -41,7 +41,6 @@ export default function NextEventsScreen() {
               time: event.time, 
               host: event.host 
             })}
-            
           >
             <Text style={styles.cardTitle}>{event.date} - {event.time}</Text>
             <Text style={styles.cardText}>Bei: {event.host}</Text>

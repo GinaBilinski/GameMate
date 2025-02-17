@@ -1,12 +1,7 @@
 import { View, SafeAreaView, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
-
-/*
- Screen für vergangene Events
- - gina
-*/
-export default function PastEventsScreen() {
+export default function SettingsScreen() {
   const navigation = useNavigation();
 
   return (
@@ -15,11 +10,11 @@ export default function PastEventsScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Vergangene Events</Text>
+        <Text style={styles.title}>Einstellungen</Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Hier können vergangene Events bewertet werden.</Text>
+        <Text style={styles.cardTitle}>Hier kannst du deine Einstellungen ändern.</Text>
       </View>
     </SafeAreaView>
   );
@@ -53,7 +48,7 @@ const styles = StyleSheet.create({
     color: "white",
   },
   card: {
-    width: "95%", 
+    width: "95%",
     backgroundColor: "#E5E5E5",
     borderRadius: 10,
     padding: 20,
