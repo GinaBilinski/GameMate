@@ -5,7 +5,7 @@
 */
 import { create } from "zustand"
 import { db } from "../services/firebaseConfig";
-import { collection, addDoc, getDocs } from "firebase/firestore";
+import { collection, addDoc, getDocs, doc, updateDoc } from "firebase/firestore";
 
 /*
  defining the user type
@@ -14,6 +14,7 @@ import { collection, addDoc, getDocs } from "firebase/firestore";
 */
 type User = {
   id?: string;
+  email: string;
   name: string;
   groupIds: string[];
   eventIds: string[];

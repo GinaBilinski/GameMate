@@ -1,66 +1,89 @@
 /*
-   Thought: Login Screen asks for name/email and password. With the button the login function is called
-   and provides the information to authentication.
-   - nico
+ Zustand Store für die Authentifizierung mit Firebase
+ - nico
 */
 import { create } from "zustand";
-import { getAuth, onAuthStateChanged, User, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { db } from "../services/firebaseConfig";
+import { signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword, User, UserCredential } from "firebase/auth";
+import { auth } from "../services/firebaseConfig";
+import { updateProfile } from "firebase/auth";
+import { useUserStore } from "../stores/userStore";
 
 /*
- defining the auth store type
- manages user authentication state
+ Definiert den Auth-Store, um den Nutzerzustand zu verwalten
  - nico
 */
 type AuthStore = {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  register: (email: string, password: string, displayName: string) => Promise<void>;
+  setUser: (user: User | null) => void;
 };
 
-/*
- creating the zustand auth store
- zustand updates state and keeps authentication in sync
- - nico
-*/
 export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
 
   /*
-   login function calls Firebase Auth to sign in the user
+   Firebase Login mit E-Mail und Passwort
    - nico
   */
   login: async (email, password) => {
     try {
-      const auth = getAuth();
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       set({ user: userCredential.user });
     } catch (error) {
-      console.error("Login failed:", error);
+      console.error("Login fehlgeschlagen:", error);
     }
   },
 
   /*
-   logout function signs the user out and clears the state
+   Firebase Logout
    - nico
   */
   logout: async () => {
     try {
-      const auth = getAuth();
       await signOut(auth);
       set({ user: null });
     } catch (error) {
-      console.error("Logout failed:", error);
+      console.error("Logout fehlgeschlagen:", error);
     }
+  },
+
+  /*
+   Registrieren eines neuen Nutzers
+   - nico
+  */
+   register: async (email: string, password: string, displayName: string) => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const firebaseUser = userCredential.user;
+
+      await useUserStore.getState().addUser({
+        id: firebaseUser.uid,
+        email: email,
+        name: displayName,
+        groupIds: [],
+        eventIds: [],
+      });
+
+      set({ user: firebaseUser });
+    } catch (error) {
+      console.error("Registrierung fehlgeschlagen:", error);
+    }
+  },
+
+  /*
+   Setzt den Nutzerzustand (z.B. nach Login)
+   - nico
+  */
+  setUser: (user) => {
+    set({ user });
   },
 }));
 
-/*
- listening to Firebase authentication state changes
- updates the auth store when a user logs in or out
- - nico
-*/
-const auth = getAuth();
+// Beobachtet den Firebase-Auth-Zustand und aktualisiert den Store
+import { onAuthStateChanged } from "firebase/auth";
+
 onAuthStateChanged(auth, (user) => {
-  useAuthStore.getState().login(user?.email || "", user?.uid || ""); // Keeps Zustand in sync
+  useAuthStore.getState().setUser(user);
 });

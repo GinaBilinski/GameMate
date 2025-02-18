@@ -1,7 +1,11 @@
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
-import HomeScreen from "../screens/home";
+import { Ionicons } from "@expo/vector-icons";
+import { useAuthStore } from "../stores/authStore";
+
+// Screens
+import HomeScreen from "../screens/Home";
 import CreateGroupScreen from "../screens/CreateGroup";
 import GroupOverviewScreen from "../screens/GroupOverview";
 import GroupMembersScreen from "../screens/GroupMembers";
@@ -12,7 +16,9 @@ import NextEventsScreen from "../screens/NextEvents";
 import EventDetailsScreen from "../screens/EventDetails";
 import SettingsScreen from "../screens/Settings";
 import LoginLogoutScreen from "../screens/Authentication";
-import { Ionicons } from "@expo/vector-icons";
+import LoginScreen from "../screens/Login";
+import RegisterScreen from "../screens/Register";
+
 
 // --- RootStackParamList (NEU: Definiert alle möglichen Routen + Parameter) ---
 export type RootStackParamList = {
@@ -31,6 +37,8 @@ export type RootStackParamList = {
     time: string;
     host: string;
   };
+  Login: undefined;
+  Register: undefined;
 };
 
 const Drawer = createDrawerNavigator();
@@ -48,14 +56,14 @@ function MainDrawer() {
       }}
     >
       <Drawer.Screen 
-        name="Gruppenübersicht" 
+        name="Home" 
         component={HomeScreen} 
         options={{
           drawerIcon: ({ color }) => <Ionicons name="home-outline" size={22} color={color} />,
         }}
       />
       <Drawer.Screen 
-        name="Einstellungen" 
+        name="Settings" 
         component={SettingsScreen} 
         options={{
           drawerIcon: ({ color }) => <Ionicons name="settings-outline" size={22} color={color} />,
@@ -72,20 +80,32 @@ function MainDrawer() {
   );
 }
 
-// --- Stack für Unterseiten ---
+
+// Check if user is logged in. Elsewise show login screen - nico
 export default function Navigation() {
+  const user = useAuthStore((state) => state.user);
+
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Main" component={MainDrawer} />
-        <Stack.Screen name="CreateGroup" component={CreateGroupScreen} />
-        <Stack.Screen name="GroupOverview" component={GroupOverviewScreen} />
-        <Stack.Screen name="NextEvents" component={NextEventsScreen} />
-        <Stack.Screen name="GroupMembers" component={GroupMembersScreen} />
-        <Stack.Screen name="Chat" component={ChatScreen} />
-        <Stack.Screen name="CreateEvent" component={CreateEventScreen} />
-        <Stack.Screen name="PastEvents" component={PastEventsScreen} />
-        <Stack.Screen name="EventDetails" component={EventDetailsScreen} />
+        {user ? (
+          <>
+            <Stack.Screen name="Main" component={MainDrawer} />
+            <Stack.Screen name="CreateGroup" component={CreateGroupScreen} />
+            <Stack.Screen name="GroupOverview" component={GroupOverviewScreen} />
+            <Stack.Screen name="NextEvents" component={NextEventsScreen} />
+            <Stack.Screen name="GroupMembers" component={GroupMembersScreen} />
+            <Stack.Screen name="Chat" component={ChatScreen} />
+            <Stack.Screen name="CreateEvent" component={CreateEventScreen} />
+            <Stack.Screen name="PastEvents" component={PastEventsScreen} />
+            <Stack.Screen name="EventDetails" component={EventDetailsScreen} />
+          </>
+        ) : (
+          <>
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Register" component={RegisterScreen} />
+          </>
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );
