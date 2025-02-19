@@ -2,6 +2,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-nativ
 import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { useGroupStore } from "@/stores/groupStore";
+import { useAuthStore } from "@/stores/authStore";
 
 /*
  Screen for creating a new group
@@ -10,6 +11,7 @@ import { useGroupStore } from "@/stores/groupStore";
 export default function CreateGroupScreen() {
   const navigation = useNavigation();
   const addGroup = useGroupStore((state) => state.addGroup);
+  const user = useAuthStore((state) => state.user);
 
   const [groupName, setGroupName] = useState("");
 
@@ -23,10 +25,16 @@ export default function CreateGroupScreen() {
       console.error("Group name is required");
       return;
     }
+
+    if (!user) {
+      console.error("User is missing");
+      return;
+    }
+
     try {
       await addGroup({
         name: groupName,
-        memberIds: [],
+        memberIds: [user.uid],
         eventIds: [],
       });
       navigation.goBack();

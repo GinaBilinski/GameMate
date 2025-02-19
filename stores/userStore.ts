@@ -13,7 +13,7 @@ import { collection, addDoc, getDocs, doc, updateDoc } from "firebase/firestore"
  - nico
 */
 type User = {
-  id?: string;
+  id: string;
   email: string;
   name: string;
   groupIds: string[];
