@@ -1,4 +1,13 @@
-Gian / 17.02.2025
+Gina 21.2.2025
+- Events werden jetzt **nach Datum** sortiert 
+- Vergangene Events werden nicht mehr in geplanten Events angezeigt
+- Gruppenübersicht zeigt jetzt Gruppen **nach nächstem Event** sortiert
+- Gruppen mit Mitglieder erstellen 
+- Events erstellen
+
+-----------------------------------------
+
+Gina / 17.02.2025
 # Navigation.tsx, home.tsx
 Ich habe eine Drawer-Navigation eingefügt (Seitenmenü mit Hamburger-Icon) 
 

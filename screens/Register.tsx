@@ -35,24 +35,28 @@ export default function RegisterScreen() {
       <Text style={styles.title}>Register</Text>
 
       <TextInput 
-        style={styles.input} 
+        style={[styles.input,{ fontSize: styles.placeholderText.fontSize, color: "black" }]}
         placeholder="Name" 
+        placeholderTextColor={styles.placeholderText.color}
         value={name} 
         onChangeText={setName} 
         autoCapitalize="none"
       />
 
-      <TextInput 
-        style={styles.input} 
-        placeholder="Email" 
-        value={email} 
-        onChangeText={setEmail} 
-        autoCapitalize="none"
+      <TextInput
+        style={[styles.input, { fontSize: styles.placeholderText.fontSize, color: "black" }]}
+        placeholder="E-Mail"
+        placeholderTextColor={styles.placeholderText.color}
+        value={email}
+        onChangeText={(text) => setEmail(text.toLowerCase())} 
+        autoCapitalize="none" 
+        keyboardType="email-address" 
       />
 
       <TextInput 
-        style={styles.input} 
-        placeholder="Password" 
+        style={[styles.input, { fontSize: styles.placeholderText.fontSize, color: "black" }]}
+        placeholder="Password"
+        placeholderTextColor={styles.placeholderText.color} 
         value={password} 
         onChangeText={setPassword} 
         secureTextEntry
@@ -89,6 +93,10 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 5,
     marginBottom: 10,
+  },
+  placeholderText: {
+    fontSize: 16,
+    color: "#A9A9A9",
   },
   button: {
     backgroundColor: "#C7E85D",

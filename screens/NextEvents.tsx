@@ -1,22 +1,55 @@
+import React, { useEffect, useState } from "react";
 import { View, SafeAreaView, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useNavigation, useRoute, NavigationProp } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/Navigation";
+import { useEventStore } from "../stores/eventStore";
 
-/*
- Screen für geplante Events
- - gina
-*/
-
-// Dummy-Daten für geplante Events
-const futureEvents = [
-  { id: "1", date: "20.02.2025", time: "18:00", host: "Max Mustermann" },
-  { id: "2", date: "27.02.2025", time: "19:30", host: "Lisa Schmidt" },
-];
+type EventData = {
+  id?: string;
+  host: string;
+  date: string;
+  time: string;
+  games: string[];
+  food: string[];
+  groupId: string;
+};
 
 export default function NextEventsScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute();
   const { groupId } = route.params as { groupId: string };
+
+  const { events, loadEventsByGroup } = useEventStore();
+  const [groupEvents, setGroupEvents] = useState<EventData[]>([]);
+
+  // Events aus Firestore laden
+  useEffect(() => {
+    loadEventsByGroup(groupId);
+  }, [groupId]);
+
+  // Events filtern & sortieren 
+  useEffect(() => {
+    const now = new Date();
+
+    const filteredEvents: EventData[] = events
+      .filter((event) => event.groupId === groupId) // Nur Events der aktuellen Gruppe
+      .map((event) => {
+        let eventDateTime;
+
+        if (event.date.includes(".") && event.time) { 
+          const [day, month, year] = event.date.split(".");
+          eventDateTime = new Date(`${year}-${month}-${day}T${event.time}:00`);
+        } else {
+          eventDateTime = new Date(`${event.date}T${event.time}:00`);
+        }
+
+        return { ...event, eventDateTime };
+      })
+      .filter((event) => event.eventDateTime >= now) // Vergangene Events entfernen
+      .sort((a, b) => a.eventDateTime.getTime() - b.eventDateTime.getTime()); // Nach nächstem Termin sortieren
+
+    setGroupEvents(filteredEvents);
+  }, [events]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -27,15 +60,15 @@ export default function NextEventsScreen() {
         <Text style={styles.title}>Geplante Events</Text>
       </View>
 
-      {futureEvents.length === 0 ? (
+      {groupEvents.length === 0 ? (
         <Text style={styles.noEventsText}>Keine geplanten Events</Text>
       ) : (
-        futureEvents.map((event) => (
+        groupEvents.map((event) => (
           <TouchableOpacity
             key={event.id}
             style={styles.card}
             onPress={() => navigation.navigate("EventDetails", { 
-              eventId: event.id, 
+              eventId: event.id ?? "", 
               groupId, 
               date: event.date, 
               time: event.time, 

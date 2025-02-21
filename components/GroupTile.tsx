@@ -30,6 +30,8 @@ const GroupTile: React.FC<GroupTileProps> = ({ groupId: id, groupName, nextEvent
   
   const styles = StyleSheet.create({
     tile: {
+      width: "95%",
+      alignSelf: "center",
       backgroundColor: "white",
       padding: 15,
       marginVertical: 10,

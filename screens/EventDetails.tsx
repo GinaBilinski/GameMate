@@ -1,8 +1,9 @@
+import React from "react";
 import { View, SafeAreaView, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 
 /*
- Screen für Event das ausgewählt wurde
+ Screen für ausgewählte Event
  - gina
 */
 export default function EventDetailsScreen() {

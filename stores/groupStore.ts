@@ -3,7 +3,7 @@
  zustand manages state, Firestore handles database operations
  - nico
 */
-import { create } from "zustand"
+import { create } from "zustand";
 import { db } from "../services/firebaseConfig";
 import { collection, doc, addDoc, deleteDoc, getDocs } from "firebase/firestore";
 
@@ -16,7 +16,7 @@ type Group = {
   id?: string;
   name: string;
   memberIds: string[];
-  eventIds: string[];
+  eventIds?: string[]; 
 };
 
 /*
@@ -28,6 +28,7 @@ type GroupStore = {
   groups: Group[];
   addGroup: (group: Group) => Promise<void>;
   loadGroups: () => Promise<void>;
+  removeGroup: (groupId: string) => Promise<void>;
 };
 
 /*
@@ -36,7 +37,6 @@ type GroupStore = {
  - nico
 */
 export const useGroupStore = create<GroupStore>((set) => ({
-
   groups: [],
 
   /*
@@ -48,10 +48,10 @@ export const useGroupStore = create<GroupStore>((set) => ({
   loadGroups: async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "groups"));
-      const groups = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Group[];
+      const groups = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Group[];
       set({ groups });
     } catch (error) {
-      console.error("Failed to load groups:", error);
+      console.error("Fehler beim Laden der Gruppen:", error);
     }
   },
 
@@ -59,24 +59,25 @@ export const useGroupStore = create<GroupStore>((set) => ({
    add a new group to Firestore and update state
    - nico
   */
-   addGroup: async (group) => {
+  addGroup: async (group) => {
     try {
       const docRef = await addDoc(collection(db, "groups"), group);
       set((state) => ({ groups: [...state.groups, { ...group, id: docRef.id }] }));
     } catch (error) {
-      console.error("Failed to save group:", error);
+      console.error("Fehler beim Speichern der Gruppe:", error);
     }
-},
+  },
+
   /*
    remove a group from Firestore and update state
    - nico
   */
-   removeGroup: async (groupId: string) => {
+  removeGroup: async (groupId: string) => {
     try {
-      await deleteDoc(doc(db, "groups", groupId)); // Delete from Firestore
-      set((state) => ({ groups: state.groups.filter((group) => group.id !== groupId) })); // Update Zustand state
+      await deleteDoc(doc(db, "groups", groupId));
+      set((state) => ({ groups: state.groups.filter((group) => group.id !== groupId) }));
     } catch (error) {
-      console.error("Failed to remove group:", error);
+      console.error("Fehler beim Löschen der Gruppe:", error);
     }
   },
 }));

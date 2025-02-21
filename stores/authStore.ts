@@ -55,22 +55,25 @@ export const useAuthStore = create<AuthStore>((set) => ({
   */
    register: async (email: string, password: string, displayName: string) => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const emailLowerCase = email.toLowerCase(); // E-Mail in Kleinbuchstaben umwandeln
+  
+      const userCredential = await createUserWithEmailAndPassword(auth, emailLowerCase, password);
       const firebaseUser = userCredential.user;
-
+  
       await useUserStore.getState().addUser({
         id: firebaseUser.uid,
-        email: email,
+        email: emailLowerCase, // Hier auch in Kleinbuchstaben speichern
         name: displayName,
         groupIds: [],
         eventIds: [],
       });
-
+  
       set({ user: firebaseUser });
     } catch (error) {
       console.error("Registrierung fehlgeschlagen:", error);
     }
   },
+  
 
   /*
    Setzt den Nutzerzustand (z.B. nach Login)

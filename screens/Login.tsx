@@ -20,15 +20,19 @@ export default function LoginScreen() {
       <Text style={styles.title}>Login</Text>
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, { fontSize: styles.placeholderText.fontSize, color: "black" }]}
         placeholder="E-Mail"
+        placeholderTextColor={styles.placeholderText.color}
         value={email}
-        onChangeText={setEmail}
+        onChangeText={(text) => setEmail(text.toLowerCase())} 
+        autoCapitalize="none" 
+        keyboardType="email-address" 
       />
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, { fontSize: styles.placeholderText.fontSize, color: "black" }]}
         placeholder="Passwort"
+        placeholderTextColor={styles.placeholderText.color}
         secureTextEntry
         value={password}
         onChangeText={setPassword}
@@ -67,6 +71,10 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     backgroundColor: "white",
     borderRadius: 5,
+  },
+  placeholderText: {
+    fontSize: 16,
+    color: "#A9A9A9",
   },
   button: {
     backgroundColor: "#C7E85D",

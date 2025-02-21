@@ -5,7 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../stores/authStore";
 
 // Screens
-import HomeScreen from "../screens/Home";
+import HomeScreen from "../screens/home";
 import CreateGroupScreen from "../screens/CreateGroup";
 import GroupOverviewScreen from "../screens/GroupOverview";
 import GroupMembersScreen from "../screens/GroupMembers";

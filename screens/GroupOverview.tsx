@@ -1,25 +1,40 @@
 import { View, SafeAreaView, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useNavigation, useRoute, NavigationProp } from "@react-navigation/native";
+import { useEffect } from "react";
 import { useGroupStore } from "../stores/groupStore";
+import { useEventStore } from "../stores/eventStore";
 import { RootStackParamList } from "../navigation/Navigation";
 
 /*
  Screen Gruppenübersicht
  - gina
 */
-
-// Dummy-Daten für geplante Events
-const futureEvents = [
-  { id: "1", date: "20.02.2025", time: "18:00", host: "Max Mustermann" },
-  { id: "2", date: "27.02.2025", time: "19:30", host: "Lisa Schmidt" },
-];
-
 export default function GroupOverviewScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute();
   const { groupId } = route.params as { groupId: string };
-
   const group = useGroupStore((state) => state.groups.find((g) => g.id === groupId));
+  const { events, loadEventsByGroup } = useEventStore();
+
+  useEffect(() => {
+    loadEventsByGroup(groupId);
+  }, [groupId]);
+
+  const nextEvent = events
+  .filter(event => event.groupId === groupId)
+  .map(event => {
+    let eventDateTime;
+    if (event.date.includes(".") && event.time) { // String in Date umwandeln
+      const [day, month, year] = event.date.split(".");
+      eventDateTime = new Date(`${year}-${month}-${day}T${event.time}:00`);
+    } else {
+      eventDateTime = new Date(`${event.date}T${event.time}:00`);
+    }
+    return { ...event, eventDateTime };
+  })
+  .filter(event => event.eventDateTime >= new Date()) // Vergangene Events ignorieren
+  .sort((a, b) => a.eventDateTime.getTime() - b.eventDateTime.getTime())[0] || null; // Nächstes Event bestimmen
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -33,11 +48,11 @@ export default function GroupOverviewScreen() {
       {/* Geplante Events */}
       <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("NextEvents", { groupId })}>
         <Text style={styles.cardTitle}>Geplante Events</Text>
-        {futureEvents.length > 0 ? (
+        {nextEvent ? (
           <>
             <Text style={styles.cardText}>Nächstes Event:</Text>
-            <Text style={styles.cardText}>Bei: Max Mustermann</Text>
-            <Text style={styles.cardText}>Datum: 20.02.2025 - 18:00</Text>
+            <Text style={styles.cardText}>Bei: {nextEvent.host}</Text>
+            <Text style={styles.cardText}>Datum: {nextEvent.date} - {nextEvent.time}</Text>
           </>
         ) : (
           <Text style={styles.cardText}>Keine geplanten Events</Text>
