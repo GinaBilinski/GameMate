@@ -1,5 +1,5 @@
 /*
- Zustand Store für die Authentifizierung mit Firebase
+ Zustand store for authentication with Firebase
  - nico
 */
 import { create } from "zustand";
@@ -9,7 +9,7 @@ import { updateProfile } from "firebase/auth";
 import { useUserStore } from "../stores/userStore";
 
 /*
- Definiert den Auth-Store, um den Nutzerzustand zu verwalten
+ Defines the auth store for managing user state
  - nico
 */
 type AuthStore = {
@@ -24,7 +24,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
 
   /*
-   Firebase Login mit E-Mail und Passwort
+   Firebase login with email and password
    - nico
   */
   login: async (email, password) => {
@@ -32,12 +32,12 @@ export const useAuthStore = create<AuthStore>((set) => ({
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       set({ user: userCredential.user });
     } catch (error) {
-      console.error("Login fehlgeschlagen:", error);
+      console.error("Login failed:", error);
     }
   },
 
   /*
-   Firebase Logout
+   Firebase logout
    - nico
   */
   logout: async () => {
@@ -45,38 +45,34 @@ export const useAuthStore = create<AuthStore>((set) => ({
       await signOut(auth);
       set({ user: null });
     } catch (error) {
-      console.error("Logout fehlgeschlagen:", error);
+      console.error("Logout failed:", error);
     }
   },
 
   /*
-   Registrieren eines neuen Nutzers
+   Registering a new user
    - nico
   */
-   register: async (email: string, password: string, displayName: string) => {
+  register: async (email: string, password: string, displayName: string) => {
     try {
-      const emailLowerCase = email.toLowerCase(); // E-Mail in Kleinbuchstaben umwandeln
-  
+      const emailLowerCase = email.toLowerCase();
+
       const userCredential = await createUserWithEmailAndPassword(auth, emailLowerCase, password);
       const firebaseUser = userCredential.user;
-  
+
       await useUserStore.getState().addUser({
-        id: firebaseUser.uid,
-        email: emailLowerCase, // Hier auch in Kleinbuchstaben speichern
+        email: emailLowerCase,
         name: displayName,
-        groupIds: [],
-        eventIds: [],
       });
-  
+
       set({ user: firebaseUser });
     } catch (error) {
-      console.error("Registrierung fehlgeschlagen:", error);
+      console.error("Registration failed:", error);
     }
   },
-  
 
   /*
-   Setzt den Nutzerzustand (z.B. nach Login)
+   Sets the user state (e.g., after login)
    - nico
   */
   setUser: (user) => {
@@ -84,7 +80,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   },
 }));
 
-// Beobachtet den Firebase-Auth-Zustand und aktualisiert den Store
+// Observes the Firebase auth state and updates the store
 import { onAuthStateChanged } from "firebase/auth";
 
 onAuthStateChanged(auth, (user) => {

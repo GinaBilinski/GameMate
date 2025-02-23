@@ -5,7 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../stores/authStore";
 
 // Screens
-import HomeScreen from "../screens/home";
+import HomeScreen from "../screens/Home";
 import CreateGroupScreen from "../screens/CreateGroup";
 import GroupOverviewScreen from "../screens/GroupOverview";
 import GroupMembersScreen from "../screens/GroupMembers";
@@ -15,9 +15,9 @@ import CreateEventScreen from "../screens/CreateEvent";
 import NextEventsScreen from "../screens/NextEvents";
 import EventDetailsScreen from "../screens/EventDetails";
 import SettingsScreen from "../screens/Settings";
-import LoginLogoutScreen from "../screens/Authentication";
-import LoginScreen from "../screens/Login";
-import RegisterScreen from "../screens/Register";
+import LoginScreen from "../screens/Authentication/Login";
+import RegisterScreen from "../screens/Authentication/Register";
+import LogoutScreen from "@/screens/Authentication/Logout";
 
 
 // --- RootStackParamList (NEU: Definiert alle möglichen Routen + Parameter) ---
@@ -70,8 +70,8 @@ function MainDrawer() {
         }}
       />
       <Drawer.Screen 
-        name="Login / Logout" 
-        component={LoginLogoutScreen} 
+        name="Logout" 
+        component={LogoutScreen} 
         options={{
           drawerIcon: ({ color }) => <Ionicons name="log-in-outline" size={22} color={color} />,
         }}

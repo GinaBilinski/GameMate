@@ -5,7 +5,9 @@
 */
 import { create } from "zustand";
 import { db } from "../services/firebaseConfig";
-import { collection, doc, addDoc, deleteDoc, getDocs } from "firebase/firestore";
+import { collection, doc, addDoc, deleteDoc, getDocs, query, where } from "firebase/firestore";
+import { useAuthStore } from "../stores/authStore";
+import { useUserStore } from "./userStore";
 
 /*
  defining the group type
@@ -47,11 +49,23 @@ export const useGroupStore = create<GroupStore>((set) => ({
   */
   loadGroups: async () => {
     try {
-      const querySnapshot = await getDocs(collection(db, "groups"));
+      const authId = useAuthStore.getState().user?.uid;
+      if (authId == null) {
+        console.error("groupStore => No user is logged in or user data is not available.");
+        return;
+      }
+      const currentUserId = await useUserStore.getState().getUserId(authId);
+      if(!currentUserId) {
+        console.error("groupStore => No user with the Id found", authId);
+        return;
+      }
+      const groupsRef = collection(db, "groups");
+      const groupsSorted  = query(groupsRef, where("memberIds", "array-contains", currentUserId))
+      const querySnapshot = await getDocs(groupsSorted);
       const groups = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Group[];
       set({ groups });
     } catch (error) {
-      console.error("Fehler beim Laden der Gruppen:", error);
+      console.error("groupStore => Error loading groups:", error);
     }
   },
 
@@ -64,7 +78,7 @@ export const useGroupStore = create<GroupStore>((set) => ({
       const docRef = await addDoc(collection(db, "groups"), group);
       set((state) => ({ groups: [...state.groups, { ...group, id: docRef.id }] }));
     } catch (error) {
-      console.error("Fehler beim Speichern der Gruppe:", error);
+      console.error("groupStore => Error adding group:", error);
     }
   },
 
@@ -77,7 +91,7 @@ export const useGroupStore = create<GroupStore>((set) => ({
       await deleteDoc(doc(db, "groups", groupId));
       set((state) => ({ groups: state.groups.filter((group) => group.id !== groupId) }));
     } catch (error) {
-      console.error("Fehler beim Löschen der Gruppe:", error);
+      console.error("groupStore => Error deleting groups:", error);
     }
   },
 }));

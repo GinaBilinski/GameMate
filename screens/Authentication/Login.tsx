@@ -1,8 +1,8 @@
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { useState } from "react";
-import { useAuthStore } from "../stores/authStore";
+import { useAuthStore } from "../../stores/authStore";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
-import { RootStackParamList } from "../navigation/Navigation";
+import { RootStackParamList } from "../../navigation/Navigation";
 
 /*
  Login-Screen für die App

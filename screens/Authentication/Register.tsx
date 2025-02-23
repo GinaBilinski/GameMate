@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
-import { useAuthStore } from "../stores/authStore";
+import { useAuthStore } from "../../stores/authStore";
 import { useUserStore } from "@/stores/userStore";
-import { RootStackParamList } from "../navigation/Navigation";
+import { RootStackParamList } from "../../navigation/Navigation";
 
 /*
  Register screen - Allows users to create an account
