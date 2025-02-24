@@ -1,3 +1,18 @@
+Nico / 24.02.2025
+
+- Gruppenmitglieder werden jetzt angezeigt.
+- Dafür getGroupMembers Funktion im groupStore erstellt.
+
+-----------------------------------------
+Nico / 23.02.2025
+
+- groupIds[] und eventIds[] aus Users entfernt.
+- Funktion getUser und getUserId ergänzt.
+- Funktion loadGroups angepasst, so dass, nur Gruppen angezeigt werden, wo man Mitgleid ist.
+- Logout Screen.
+
+-----------------------------------------
+
 Gina 21.2.2025
 - Events werden jetzt **nach Datum** sortiert 
 - Vergangene Events werden nicht mehr in geplanten Events angezeigt
