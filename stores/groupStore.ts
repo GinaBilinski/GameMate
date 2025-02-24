@@ -1,18 +1,18 @@
 /*
- importing dependencies
- zustand manages state, Firestore handles database operations
- - nico
+  importing dependencies
+  zustand manages state, Firestore handles database operations
+  - nico
 */
 import { create } from "zustand";
 import { db } from "../services/firebaseConfig";
-import { collection, doc, addDoc, deleteDoc, getDocs, query, where } from "firebase/firestore";
+import { collection, doc, addDoc, getDoc, deleteDoc, getDocs, query, where } from "firebase/firestore";
 import { useAuthStore } from "../stores/authStore";
 import { useUserStore } from "./userStore";
 
 /*
- defining the group type
- stores only IDs for efficiency
- - nico
+  defining the group type
+  stores only IDs for efficiency
+  - nico
 */
 type Group = {
   id?: string;
@@ -22,30 +22,31 @@ type Group = {
 };
 
 /*
- defining the zustand store
- manages groups and syncs with Firestore
- - nico
+  defining the zustand store
+  manages groups and syncs with Firestore
+  - nico
 */
 type GroupStore = {
   groups: Group[];
   addGroup: (group: Group) => Promise<void>;
   loadGroups: () => Promise<void>;
   removeGroup: (groupId: string) => Promise<void>;
+  getGroupMembers: (groupId: string) => Promise<string[]>;
 };
 
 /*
- creating the zustand store
- zustand updates state and keeps data in sync
- - nico
+  creating the zustand store
+  zustand updates state and keeps data in sync
+  - nico
 */
 export const useGroupStore = create<GroupStore>((set) => ({
   groups: [],
 
   /*
-   Currently loading ALL groups. Needs to be refactored,
-   so it only loads the groups where the logged-in user is a member!**
-   load all groups from Firestore and update state
-   - nico
+    Currently loading ALL groups. Needs to be refactored,
+    so it only loads the groups where the logged-in user is a member!**
+    load all groups from Firestore and update state
+    - nico
   */
   loadGroups: async () => {
     try {
@@ -55,12 +56,12 @@ export const useGroupStore = create<GroupStore>((set) => ({
         return;
       }
       const currentUserId = await useUserStore.getState().getUserId(authId);
-      if(!currentUserId) {
+      if (!currentUserId) {
         console.error("groupStore => No user with the Id found", authId);
         return;
       }
       const groupsRef = collection(db, "groups");
-      const groupsSorted  = query(groupsRef, where("memberIds", "array-contains", currentUserId))
+      const groupsSorted = query(groupsRef, where("memberIds", "array-contains", currentUserId));
       const querySnapshot = await getDocs(groupsSorted);
       const groups = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Group[];
       set({ groups });
@@ -70,8 +71,8 @@ export const useGroupStore = create<GroupStore>((set) => ({
   },
 
   /*
-   add a new group to Firestore and update state
-   - nico
+    add a new group to Firestore and update state
+    - nico
   */
   addGroup: async (group) => {
     try {
@@ -83,8 +84,8 @@ export const useGroupStore = create<GroupStore>((set) => ({
   },
 
   /*
-   remove a group from Firestore and update state
-   - nico
+    remove a group from Firestore and update state
+    - nico
   */
   removeGroup: async (groupId: string) => {
     try {
@@ -92,6 +93,36 @@ export const useGroupStore = create<GroupStore>((set) => ({
       set((state) => ({ groups: state.groups.filter((group) => group.id !== groupId) }));
     } catch (error) {
       console.error("groupStore => Error deleting groups:", error);
+    }
+  },
+
+  /*
+    Function to retrieve the member IDs of a group from Firestore.
+    - nico
+  */
+  getGroupMembers: async (groupId: string) => {
+    try {
+      const groupDocRef = doc(db, "groups", groupId);
+      const groupDoc = await getDoc(groupDocRef);
+
+      if (!groupDoc.exists()) {
+        console.error("getGroupMembers => Group not found:", groupId);
+        return [];
+      }
+
+      // Retrieve and return the member IDs from the group document
+      const groupData = groupDoc.data() as { memberIds: string[] };
+      const memberIds = groupData.memberIds ?? [];
+
+      if (memberIds.length === 0) {
+        console.error("getGroupMembers => No members found");
+        return [];
+      }
+
+      return memberIds;
+    } catch (error) {
+      console.error("getGroupMembers => Error fetching group member IDs:", error);
+      return [];
     }
   },
 }));

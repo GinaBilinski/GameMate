@@ -63,7 +63,6 @@ export const useUserStore = create<UserStore>((set) => ({
 
       if (userDoc.exists()) {
         const userData = userDoc.data() as User;
-        console.log("userStore => User found:", userData);
         return userData;
       } else {
         console.log("userStore => No user found with authId:", authId);

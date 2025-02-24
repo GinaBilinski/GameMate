@@ -8,7 +8,7 @@ import { useAuthStore } from "../stores/authStore";
 import HomeScreen from "../screens/Home";
 import CreateGroupScreen from "../screens/CreateGroup";
 import GroupOverviewScreen from "../screens/GroupOverview";
-import GroupMembersScreen from "../screens/GroupMembers";
+import GroupMembersScreen from "../screens/MemberOverview";
 import ChatScreen from "../screens/Chat";
 import PastEventsScreen from "../screens/PastEvents";
 import CreateEventScreen from "../screens/CreateEvent";
