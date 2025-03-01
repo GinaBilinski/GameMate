@@ -1,13 +1,32 @@
+import React, { useEffect, useState, useCallback } from "react";
 import { View, SafeAreaView, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute, NavigationProp, useFocusEffect } from "@react-navigation/native";
+import { RootStackParamList } from "../navigation/Navigation";
+import { Event, useEventStore } from "../stores/eventStore";
 
 
-/*
- Screen für vergangene Events
- - gina
-*/
 export default function PastEventsScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const route = useRoute();
+  const { groupId } = route.params as { groupId: string };
+  const { events, loadGroupEvents: loadGroupEvents } = useEventStore();
+  const [ groupEvents, setPastEvents ] = useState<Event[]>([]);
+
+  // Events aus Firestore laden
+  useFocusEffect(
+    useCallback(() => {
+      loadGroupEvents(groupId);
+    }, [groupId])
+  );
+
+  // Events filtern & sortieren 
+  useEffect(() => {
+    const filteredEvents: Event[] = events
+      .filter((event) => event.groupId === groupId && event.completed) // ✅ Only past events
+      .sort((a, b) => new Date(`${b.date}T${b.time}:00`).getTime() - new Date(`${a.date}T${a.time}:00`).getTime()); // ✅ Sort: Latest event first
+
+    setPastEvents(filteredEvents);
+  }, [events]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -18,9 +37,23 @@ export default function PastEventsScreen() {
         <Text style={styles.title}>Vergangene Events</Text>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Hier können vergangene Events bewertet werden.</Text>
-      </View>
+      {groupEvents.length === 0 ? (
+        <Text style={styles.noEventsText}>Keine geplanten Events</Text>
+      ) : (
+        groupEvents.map((event) => (
+          <TouchableOpacity
+            key={event.id}
+            style={styles.card}
+            onPress={() => navigation.navigate("RateEvent", { 
+              eventId: event.id ?? "", 
+              groupId, 
+            })}
+          >
+            <Text style={styles.cardTitle}>{event.date} - {event.time}</Text>
+            <Text style={styles.cardText}>Bei: {event.host}</Text>
+          </TouchableOpacity>
+        ))
+      )}
     </SafeAreaView>
   );
 }
@@ -63,5 +96,15 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontWeight: "bold",
+  },
+  cardText: {
+    fontSize: 16,
+    color: "#666",
+  },
+  noEventsText: {
+    fontSize: 16,
+    color: "#E5E5E5",
+    textAlign: "center",
+    marginTop: 20,
   },
 });

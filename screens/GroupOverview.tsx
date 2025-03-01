@@ -14,7 +14,7 @@ export default function GroupOverviewScreen() {
   const route = useRoute();
   const { groupId } = route.params as { groupId: string };
   const group = useGroupStore((state) => state.groups.find((g) => g.id === groupId));
-  const { events, loadEventsByGroup } = useEventStore();
+  const { events, loadGroupEvents: loadEventsByGroup } = useEventStore();
 
   useEffect(() => {
     loadEventsByGroup(groupId);
@@ -75,7 +75,7 @@ export default function GroupOverviewScreen() {
       </TouchableOpacity>
 
       {/* Vergangene Events */}
-      <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("PastEvents")}>
+      <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("PastEvents", { groupId })}>
         <Text style={styles.cardTitle}>Vergangene Events</Text>
       </TouchableOpacity>
     </SafeAreaView>

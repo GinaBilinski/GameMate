@@ -1,54 +1,31 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { View, SafeAreaView, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { useNavigation, useRoute, NavigationProp } from "@react-navigation/native";
+import { useNavigation, useRoute, NavigationProp, useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/Navigation";
-import { useEventStore } from "../stores/eventStore";
+import { Event, useEventStore } from "../stores/eventStore";
 
-type EventData = {
-  id?: string;
-  host: string;
-  date: string;
-  time: string;
-  games: string[];
-  food: string[];
-  groupId: string;
-};
 
 export default function NextEventsScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute();
   const { groupId } = route.params as { groupId: string };
-
-  const { events, loadEventsByGroup } = useEventStore();
-  const [groupEvents, setGroupEvents] = useState<EventData[]>([]);
+  const { events, loadGroupEvents: loadGroupEvents } = useEventStore();
+  const [ groupEvents, setNextEvents ] = useState<Event[]>([]);
 
   // Events aus Firestore laden
-  useEffect(() => {
-    loadEventsByGroup(groupId);
-  }, [groupId]);
+  useFocusEffect(
+    useCallback(() => {
+      loadGroupEvents(groupId);
+    }, [groupId])
+  );
 
   // Events filtern & sortieren 
   useEffect(() => {
-    const now = new Date();
+    const filteredEvents: Event[] = events
+      .filter((event) => event.groupId === groupId && !event.completed)
+      .sort((a, b) => new Date(`${a.date}T${a.time}:00`).getTime() - new Date(`${b.date}T${b.time}:00`).getTime());
 
-    const filteredEvents: EventData[] = events
-      .filter((event) => event.groupId === groupId) // Nur Events der aktuellen Gruppe
-      .map((event) => {
-        let eventDateTime;
-
-        if (event.date.includes(".") && event.time) { 
-          const [day, month, year] = event.date.split(".");
-          eventDateTime = new Date(`${year}-${month}-${day}T${event.time}:00`);
-        } else {
-          eventDateTime = new Date(`${event.date}T${event.time}:00`);
-        }
-
-        return { ...event, eventDateTime };
-      })
-      .filter((event) => event.eventDateTime >= now) // Vergangene Events entfernen
-      .sort((a, b) => a.eventDateTime.getTime() - b.eventDateTime.getTime()); // Nach nächstem Termin sortieren
-
-    setGroupEvents(filteredEvents);
+    setNextEvents(filteredEvents);
   }, [events]);
 
   return (

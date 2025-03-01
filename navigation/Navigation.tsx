@@ -18,6 +18,7 @@ import SettingsScreen from "../screens/Settings";
 import LoginScreen from "../screens/Authentication/Login";
 import RegisterScreen from "../screens/Authentication/Register";
 import LogoutScreen from "@/screens/Authentication/Logout";
+import RateEventScreen from "@/screens/RateEvent";
 
 
 // --- RootStackParamList (NEU: Definiert alle möglichen Routen + Parameter) ---
@@ -28,7 +29,7 @@ export type RootStackParamList = {
   GroupMembers: { groupId: string };
   Chat: { groupId: string };
   CreateEvent: { groupId: string };
-  PastEvents: undefined;
+  PastEvents: { groupId: string };
   NextEvents: { groupId: string };
   EventDetails: { 
     eventId: string;
@@ -37,6 +38,7 @@ export type RootStackParamList = {
     time: string;
     host: string;
   };
+  RateEvent: {eventId: string; groupId: string};
   Login: undefined;
   Register: undefined;
 };
@@ -99,6 +101,7 @@ export default function Navigation() {
             <Stack.Screen name="CreateEvent" component={CreateEventScreen} />
             <Stack.Screen name="PastEvents" component={PastEventsScreen} />
             <Stack.Screen name="EventDetails" component={EventDetailsScreen} />
+            <Stack.Screen name="RateEvent" component={RateEventScreen} />
           </>
         ) : (
           <>

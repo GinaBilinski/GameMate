@@ -8,7 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 export default function HomeScreen({ navigation }: { navigation: any }) {
   const groups = useGroupStore((state) => state.groups);
   const loadGroups = useGroupStore((state) => state.loadGroups);
-  const { events, loadEventsByGroup } = useEventStore();
+  const { events, loadGroupEvents: loadEventsByGroup } = useEventStore();
 
   useEffect(() => {
     loadGroups();

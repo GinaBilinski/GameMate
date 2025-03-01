@@ -2,32 +2,24 @@
  installed zustand and firebase:
  npm install firebase
  npm install zustand
+ npm install date-fns
  importing dependencies
  zustand manages state, Firestore handles database operations
  - nico
 */
 import { create } from "zustand";
 import { db } from "../services/firebaseConfig";
-import { collection, doc, addDoc, deleteDoc, getDocs, getDoc, query } from "firebase/firestore";
-
-export const getUserNameById = async (userId: string): Promise<string> => {
-  try {
-    const userDoc = await getDoc(doc(db, "users", userId));
-    if (userDoc.exists()) {
-      return userDoc.data().name; 
-    }
-  } catch (error) {
-    console.error(`Fehler beim Abrufen des Benutzers mit ID ${userId}:`, error);
-  }
-  return "Unbekannt"; 
-};
+import { format, parse } from "date-fns";
+import { de } from "date-fns/locale";
+import { useUserStore } from "./userStore";
+import { collection, doc, addDoc, deleteDoc, getDocs, getDoc, updateDoc } from "firebase/firestore";
 
 /*
  defining the event type
  stores only IDs for efficiency and references group ownership
  - nico
 */
-type Event = {
+export type Event = {
   id?: string;
   host: string;
   date: string;
@@ -35,6 +27,7 @@ type Event = {
   games: string[];
   food: string[];
   groupId: string;
+  completed: boolean;
 };
 
 /*
@@ -44,41 +37,66 @@ type Event = {
 */
 type EventStore = {
   events: Event[];
-  loadAllGroupEvents: () => Promise<void>;
   addEvent: (event: Event) => Promise<void>;
-  loadEventsByGroup: (groupId: string) => Promise<void>;
+  loadGroupEvents: (groupId: string) => Promise<void>;
   removeEvent: (eventId: string, groupId: string) => Promise<void>;
+  markEventsAsCompleted: () => Promise<void>;
 };
 
 /*
- creating the zustand store
- zustand updates state and keeps data in sync
- - nico
+creating the zustand store
+zustand updates state and keeps data in sync
+- nico
 */
 export const useEventStore = create<EventStore>((set) => ({
   events: [],
 
-  loadAllGroupEvents: async () => {
+  /*
+  Function to check and mark expired events as completed
+  - nico
+  */
+  markEventsAsCompleted: async () => {
     try {
+      const now = new Date();
+
       const groupsSnapshot = await getDocs(collection(db, "groups"));
-      let allEvents: Event[] = [];
-      
       for (const groupDoc of groupsSnapshot.docs) {
         const groupId = groupDoc.id;
-        const eventsSnapshot = await getDocs(collection(db, `groups/${groupId}/events`));
+        const eventsRef = collection(db, `groups/${groupId}/events`);
+        const eventsSnapshot = await getDocs(eventsRef);
 
-        const groupEvents = await Promise.all(
-          eventsSnapshot.docs.map(async (doc) => {
-            const eventData = doc.data() as Event;
-            const hostName = await getUserNameById(eventData.host);
-            return { id: doc.id, ...eventData, host: hostName, groupId };
-          })
-        );
-        allEvents = [...allEvents, ...groupEvents];
+        for (const eventDoc of eventsSnapshot.docs) {
+          const eventData = eventDoc.data() as Event;
+
+          let eventDateTime;
+          try {
+            const eventDate = parse(eventData.date, "dd.MM.yyyy", new Date(), { locale: de });
+            eventDateTime = new Date(eventDate);
+          } catch (error) {
+            console.error(`Invalid date format for event ${eventDoc.id}:`, eventData.date);
+            continue;
+          }
+
+          const [hours, minutes] = eventData.time.split(":").map(Number);
+          eventDateTime.setHours(hours, minutes, 0, 0);
+
+          if (!eventData.completed && eventDateTime < now) {
+            await updateDoc(doc(db, `groups/${groupId}/events`, eventDoc.id), {
+              completed: true,
+            });
+
+            set((state) => ({
+              events: state.events.map((event) =>
+                event.id === eventDoc.id ? { ...event, completed: true } : event
+              ),
+            }));
+
+            console.log(`Event ${eventDoc.id} marked as completed.`);
+          }
+        }
       }
-      set({ events: allEvents }); 
     } catch (error) {
-      console.error("Fehler beim Laden aller Gruppen-Events:", error);
+      console.error("Error marking events as completed:", error);
     }
   },
 
@@ -86,17 +104,22 @@ export const useEventStore = create<EventStore>((set) => ({
    load all events for a specific group from Firestore
    - nico
   */
-  loadEventsByGroup: async (groupId) => {
+  loadGroupEvents: async (groupId) => {
     try {
+      await useEventStore.getState().markEventsAsCompleted();
+
       const eventsSnapshot = await getDocs(collection(db, `groups/${groupId}/events`));
       const groupEvents = await Promise.all(
         eventsSnapshot.docs.map(async (doc) => {
           const eventData = doc.data() as Event;
-          const hostName = await getUserNameById(eventData.host);
+          const hostData = await useUserStore.getState().getUser(eventData.host);
+          if(!hostData){
+            console.error("eventStore: Error loading host:");
+          }
+          const hostName = hostData ? hostData.name : "Unknown";
           return { id: doc.id, ...eventData, host: hostName, groupId };
         })
       );
-
       set((state) => ({
         events: [...state.events.filter((e) => e.groupId !== groupId), ...groupEvents],
       }));
@@ -104,7 +127,6 @@ export const useEventStore = create<EventStore>((set) => ({
       console.error("Fehler beim Laden der Gruppen-Events:", error);
     }
   },
-
   /*
   add a new event to Firestore and update state
   - nico
@@ -112,7 +134,11 @@ export const useEventStore = create<EventStore>((set) => ({
   addEvent: async (event) => {
     try {
       const docRef = await addDoc(collection(db, `groups/${event.groupId}/events`), event);
-      const hostName = await getUserNameById(event.host); // Namen abrufen
+      const hostData = await useUserStore.getState().getUser(event.host);
+      if(!hostData){
+        console.error("eventStore: Error loading host:");
+      }
+      const hostName = hostData ? hostData.name : "Unknown";
       set((state) => ({
         events: [...state.events, { ...event, id: docRef.id, host: hostName }],
       }));
