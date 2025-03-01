@@ -1,3 +1,10 @@
+Nico 01.03.2025
+
+- cleaned up eventStore (deleted getUserNameById and loadEventsByGroup). Added markEventAsCompleted and call it in loadGroupEvents.
+- cleaned up NextEventScreen and created PastEventScreens. Also created a basic rating Screen.
+- To do: Events should manage the reviews themselves.
+
+-----------------------------------------
 Nico / 24.02.2025
 
 - Gruppenmitglieder werden jetzt angezeigt.
