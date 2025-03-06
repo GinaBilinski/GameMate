@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useGroupStore } from "../stores/groupStore";
 import { useEventStore } from "../stores/eventStore";
 import { RootStackParamList } from "../navigation/Navigation";
+import CustomText from "../components/CustomText";
 
 /*
  Screen Gruppenübersicht
@@ -42,41 +43,46 @@ export default function GroupOverviewScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>{group?.name}</Text>
+        <CustomText style={styles.title}>{group?.name}</CustomText>
       </View>
 
       {/* Geplante Events */}
       <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("NextEvents", { groupId })}>
-        <Text style={styles.cardTitle}>Geplante Events</Text>
+        <CustomText style={styles.cardTitle}>Geplante Events</CustomText>
         {nextEvent ? (
           <>
-            <Text style={styles.cardText}>Nächstes Event:</Text>
-            <Text style={styles.cardText}>Bei: {nextEvent.host}</Text>
-            <Text style={styles.cardText}>Datum: {nextEvent.date} - {nextEvent.time}</Text>
+            <CustomText style={styles.cardText}>Nächstes Event:</CustomText>
+            <CustomText style={styles.cardText}>Bei: {nextEvent.host}</CustomText>
+            <CustomText style={styles.cardText}>Datum: {nextEvent.date} - {nextEvent.time}</CustomText>
           </>
         ) : (
-          <Text style={styles.cardText}>Keine geplanten Events</Text>
+          <CustomText style={styles.cardText}>Keine geplanten Events</CustomText>
         )}
       </TouchableOpacity>
 
       {/* Gruppenmitglieder */}
       <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("GroupMembers", { groupId })}>
-        <Text style={styles.cardTitle}>Gruppenmitglieder</Text>
+        <CustomText style={styles.cardTitle}>Gruppenmitglieder</CustomText>
       </TouchableOpacity>
 
       {/* Chat */}
       <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("Chat", { groupId })}>
-        <Text style={styles.cardTitle}>Chat</Text>
+        <CustomText style={styles.cardTitle}>Chat</CustomText>
       </TouchableOpacity>
 
       {/* Event Planen */}
       <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("CreateEvent", { groupId })}>
-        <Text style={styles.cardTitle}>Event Planen</Text>
+        <CustomText style={styles.cardTitle}>Event Planen</CustomText>
       </TouchableOpacity>
 
       {/* Vergangene Events */}
+<<<<<<< HEAD
       <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("PastEvents", { groupId })}>
         <Text style={styles.cardTitle}>Vergangene Events</Text>
+=======
+      <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("PastEvents")}>
+        <CustomText style={styles.cardTitle}>Vergangene Events</CustomText>
+>>>>>>> gina-Gruppenuebersicht
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -126,3 +132,4 @@ const styles = StyleSheet.create({
     color: "#666",
   },
 });
+

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Nico 01.03.2025
 
 - cleaned up eventStore (deleted getUserNameById and loadEventsByGroup). Added markEventAsCompleted and call it in loadGroupEvents.
@@ -19,6 +20,11 @@ Nico / 23.02.2025
 - Logout Screen.
 
 -----------------------------------------
+=======
+Gina 06.03.2025
+- Chat erstellt - wobei der Name noch nciht richtig angezeigt wird - muss mir erst deine Änderungen der Stores mir anschauen
+- Abstimmungen möglich für Essen und Spiele 
+>>>>>>> gina-Gruppenuebersicht
 
 Gina 21.2.2025
 - Events werden jetzt **nach Datum** sortiert 

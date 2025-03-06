@@ -9,6 +9,5 @@ export default function CustomText(props: TextProps) {
 const styles = StyleSheet.create({
   text: {
     fontFamily: "SpaceMono",
-    color: "white", 
   },
 });
