@@ -9,21 +9,16 @@ import { useAuthStore } from "../stores/authStore"; // Firebase Auth Store
 export default function EventDetailsScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { eventId, groupId, date, time, host } = route.params as {
-    eventId: string;
-    groupId: string;
-    date: string;
-    time: string;
-    host: string;
-  };
-
+  const { eventId, groupId, date, time, host } = route.params as {eventId: string; groupId: string; date: string; time: string; host: string;};
   const currentUser = useAuthStore((state) => state.user); // Aktueller Benutzer
   const userId = currentUser?.uid || ""; // Benutzer-ID 
+  // Zustände für Spiele & Essen mit Voting-Daten
   const [games, setGames] = useState<{ name: string; votes: number; votedBy: string[] }[]>([]);
   const [food, setFood] = useState<{ name: string; votes: number; votedBy: string[] }[]>([]);
   const [newGame, setNewGame] = useState("");
   const [newFood, setNewFood] = useState("");
-  const [userVotedGame, setUserVotedGame] = useState(false);
+  // Zustände, um zu tracken, ob der Benutzer schon abgestimmt hat
+  const [userVotedGame, setUserVotedGame] = useState(false); 
   const [userVotedFood, setUserVotedFood] = useState(false);
 
   type EventData = {
@@ -31,6 +26,10 @@ export default function EventDetailsScreen() {
     food: { name: string; votes: number; votedBy: string[] }[];
   };
 
+  /*
+  Lädt die Event-Daten aus Firestore, wenn Screen geöffnet wird.
+  Prüft, ob der aktuelle Nutzer bereits abgestimmt hat
+  */
   useEffect(() => {
     const fetchEventDetails = async () => {
       try {
@@ -56,7 +55,8 @@ export default function EventDetailsScreen() {
       fetchEventDetails();
     }
   }, [eventId, groupId, userId]);
-
+  
+  // Ein neues Spiel zur Liste hinzufügen und in Firestore speichern.
   const handleAddGame = async () => {
     if (!newGame) return;
     const updatedGames = [...games, { name: newGame, votes: 0, votedBy: [] }];
@@ -65,6 +65,7 @@ export default function EventDetailsScreen() {
     await updateDoc(doc(db, `groups/${groupId}/events`, eventId), { games: updatedGames });
   };
 
+  // Neues Essen hinzufügen und in Firestore speichern.
   const handleAddFood = async () => {
     if (!newFood) return;
     const updatedFood = [...food, { name: newFood, votes: 0, votedBy: [] }];
@@ -73,6 +74,7 @@ export default function EventDetailsScreen() {
     await updateDoc(doc(db, `groups/${groupId}/events`, eventId), { food: updatedFood });
   };
 
+  // Abstimmung für ein Spiel oder Essen durchführen.
   const handleVote = async (category: "games" | "food", index: number) => {
     if (!currentUser) {
       alert("Du musst angemeldet sein, um abzustimmen!");
@@ -92,14 +94,15 @@ export default function EventDetailsScreen() {
     updatedList[index].votes += 1;
     updatedList[index].votedBy.push(userId);
 
+    // Zustand aktualisieren und Kateorien für weitere Abstimmugn sperren 
     if (category === "games") {
       setGames(updatedList);
-      setUserVotedGame(true); // Sperrt weitere Abstimmungen in dieser Kategorie
+      setUserVotedGame(true); 
     } else {
       setFood(updatedList);
-      setUserVotedFood(true); // Sperrt weitere Abstimmungen in dieser Kategorie
+      setUserVotedFood(true); 
     }
-
+    // Firestore aktualisieren
     await updateDoc(doc(db, `groups/${groupId}/events`, eventId), { [category]: updatedList });
   };
 
@@ -191,21 +194,96 @@ export default function EventDetailsScreen() {
 
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#1C313B", padding: 10 },
-  header: { flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 15 },
-  backButton: { position: "absolute", left: 15 },
-  backText: { fontSize: 24, color: "white" },
-  title: { fontSize: 22, fontWeight: "bold", color: "white" },
-  card: { width: "95%", backgroundColor: "#E5E5E5", borderRadius: 10, padding: 20, marginBottom: 10, alignSelf: "center" },
-  cardTitle: { fontSize: 18, fontWeight: "bold" },
-  input: { flex: 1, backgroundColor: "white", borderRadius: 5, padding: 8, marginTop: 5 },
-  cardText: { fontSize: 16, color: "#666" },
-  listItem: { fontSize: 16, color: "black" },
-  voteRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 10 },
-  voteDisplay: { flexDirection: "row", alignItems: "center", gap: 10 },
-  voteCount: { fontSize: 16, fontWeight: "bold" },
-  addRow: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
-  addButton: { backgroundColor: "#C7E85D", borderRadius: 5, padding: 9, marginLeft: 10, marginTop: 4.5 },
-  voteCard: { width: "95%", backgroundColor: "#C7E85D", borderRadius: 10, padding: 5, marginBottom: 10, alignSelf: "center", alignItems: "center" },
-  voteCardTitle: { fontSize: 18, fontWeight: "bold", color: "black", paddingVertical: 15, },
+  container: { 
+    flex: 1, 
+    backgroundColor: "#1C313B", 
+    padding: 10 
+  },
+  header: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    justifyContent: "center", 
+    paddingVertical: 15 
+  },
+  backButton: { 
+    position: "absolute", 
+    left: 15 
+  },
+  backText: { 
+    fontSize: 24, 
+    color: "white" 
+  },
+  title: { 
+    fontSize: 22, 
+    fontWeight: "bold", 
+    color: "white" 
+  },
+  card: { 
+    width: "95%", 
+    backgroundColor: "#E5E5E5", 
+    borderRadius: 10, 
+    padding: 20, 
+    marginBottom: 10, 
+    alignSelf: "center" 
+  },
+  cardTitle: { 
+    fontSize: 18, 
+    fontWeight: "bold" 
+  },
+  input: { 
+    flex: 1, 
+    backgroundColor: "white", 
+    borderRadius: 5, 
+    padding: 8, 
+    marginTop: 5 
+  },
+  cardText: { 
+    fontSize: 16, 
+    color: "#666" 
+  },
+  listItem: { 
+    fontSize: 16, 
+    color: "black" 
+  },
+  voteRow: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    justifyContent: "space-between", 
+    paddingVertical: 10 
+  },
+  voteDisplay: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    gap: 10 },
+  voteCount: { 
+    fontSize: 16, 
+    fontWeight: "bold" 
+  },
+  addRow: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    marginBottom: 10 
+  },
+  addButton: { 
+    backgroundColor: "#C7E85D", 
+    borderRadius: 5, 
+    padding: 9, 
+    marginLeft: 10, 
+    marginTop: 4.5 
+  },
+  voteCard: { 
+    width: "95%", 
+    backgroundColor: "#C7E85D", 
+    borderRadius: 10, 
+    padding: 5, 
+    marginBottom: 10, 
+    alignSelf: "center", 
+    alignItems: "center" 
+  },
+  voteCardTitle: { 
+    fontSize: 18, 
+    fontWeight: "bold", 
+    color: "black", 
+    paddingVertical: 15, 
+  },
 });

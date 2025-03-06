@@ -21,6 +21,7 @@ export default function ChatScreen() {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const flatListRef = useRef<FlatList>(null);
 
+  //Holt die Nachrichten aus Firestore, wenn der Chat geöffnet wird.
   useEffect(() => {
     const chatRef = collection(db, `groups/${groupId}/chats`);
     const q = query(chatRef, orderBy("timestamp", "asc"));
@@ -35,6 +36,7 @@ export default function ChatScreen() {
     return () => unsubscribe();
   }, [groupId]);
 
+  // Überwacht die Tastatur, um das Eingabefeld nach oben zu schieben, wenn sie geöffnet wird.
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
       Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
@@ -55,6 +57,7 @@ export default function ChatScreen() {
     };
   }, []);
   
+  // Speichert eine neue Nachricht in Firestore
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !currentUser) return;
     await addDoc(collection(db, `groups/${groupId}/chats`), {
@@ -66,11 +69,13 @@ export default function ChatScreen() {
     scrollToBottom(); 
   };
 
+  // Wandelt den Zeitstempel (Timestamp) in ein lesbares Datumsformat um
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
     return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
   };
 
+  // Scrollt zum Ende der Nachrichtenliste, damit die neueste Nachricht sichtbar ist
   const scrollToBottom = () => {
     if (flatListRef.current && messages.length > 0) {
       flatListRef.current.scrollToEnd({ animated: false });
