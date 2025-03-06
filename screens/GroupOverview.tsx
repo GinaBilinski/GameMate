@@ -76,13 +76,8 @@ export default function GroupOverviewScreen() {
       </TouchableOpacity>
 
       {/* Vergangene Events */}
-<<<<<<< HEAD
       <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("PastEvents", { groupId })}>
         <Text style={styles.cardTitle}>Vergangene Events</Text>
-=======
-      <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("PastEvents")}>
-        <CustomText style={styles.cardTitle}>Vergangene Events</CustomText>
->>>>>>> gina-Gruppenuebersicht
       </TouchableOpacity>
     </SafeAreaView>
   );
