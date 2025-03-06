@@ -5,7 +5,7 @@
 */
 import { create } from "zustand";
 import { db } from "../services/firebaseConfig";
-import { collection, doc, addDoc, getDoc, deleteDoc, getDocs, query, where } from "firebase/firestore";
+import { collection, doc, addDoc, getDoc, deleteDoc, getDocs, query, where, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import { useAuthStore } from "../stores/authStore";
 import { useUserStore } from "./userStore";
 
@@ -32,6 +32,8 @@ type GroupStore = {
   loadGroups: () => Promise<void>;
   removeGroup: (groupId: string) => Promise<void>;
   getGroupMembers: (groupId: string) => Promise<string[]>;
+  addMember: (userId: string, groupId: string) => Promise<void>;
+  removeMember: (userId: string, groupId: string) => Promise<void>;
 };
 
 /*
@@ -115,14 +117,86 @@ export const useGroupStore = create<GroupStore>((set) => ({
       const memberIds = groupData.memberIds ?? [];
 
       if (memberIds.length === 0) {
-        console.error("getGroupMembers => No members found");
+        console.error("groupStore/getGroupMembers => No members found");
         return [];
       }
 
       return memberIds;
     } catch (error) {
-      console.error("getGroupMembers => Error fetching group member IDs:", error);
+      console.error("groupStore/getGroupMembers => Error fetching group member IDs:", error);
       return [];
     }
   },
+
+/*
+    Function to add a member to a group
+    - nico
+  */
+    addMember: async (userId: string, groupId: string) => {
+      try {
+        const groupDocRef = doc(db, "groups", groupId);
+        const groupDoc = await getDoc(groupDocRef);
+        
+        if (!groupDoc.exists()) {
+          console.error("groupStore/addMember => Group not found:", groupId);
+          return;
+        }
+  
+        const groupData = groupDoc.data() as Group;
+        if (groupData.memberIds.includes(userId)) {
+          console.warn("groupStore/addMember => User is already a member of this group.");
+          return;
+        }
+  
+        await updateDoc(groupDocRef, {
+          memberIds: arrayUnion(userId),
+        });
+  
+        set((state) => ({
+          groups: state.groups.map((group) =>
+            group.id === groupId
+              ? { ...group, memberIds: [...group.memberIds, userId] }
+              : group
+          ),
+        }));
+      } catch (error) {
+        console.error("groupStore/addMember => Error adding member:", error);
+      }
+    },
+  
+    /*
+      Function to remove a member from a group
+      - nico
+    */
+    removeMember: async (userId: string, groupId: string) => {
+      try {
+        const groupDocRef = doc(db, "groups", groupId);
+        const groupDoc = await getDoc(groupDocRef);
+  
+        if (!groupDoc.exists()) {
+          console.error("groupStore/removeMember => Group not found:", groupId);
+          return;
+        }
+  
+        const groupData = groupDoc.data() as Group;
+        if (!groupData.memberIds.includes(userId)) {
+          console.warn("groupStore/removeMember => User is not a member of this group.");
+          return;
+        }
+  
+        await updateDoc(groupDocRef, {
+          memberIds: arrayRemove(userId),
+        });
+  
+        set((state) => ({
+          groups: state.groups.map((group) =>
+            group.id === groupId
+              ? { ...group, memberIds: group.memberIds.filter((id) => id !== userId) }
+              : group
+          ),
+        }));
+      } catch (error) {
+        console.error("groupStore/removeMember => Error removing member:", error);
+      }
+    },
 }));

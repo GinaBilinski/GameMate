@@ -12,6 +12,7 @@ import { db } from "../services/firebaseConfig";
 import { format, parse } from "date-fns";
 import { de } from "date-fns/locale";
 import { useUserStore } from "./userStore";
+import { useAuthStore } from "./authStore";
 import { collection, doc, addDoc, deleteDoc, getDocs, getDoc, updateDoc } from "firebase/firestore";
 
 /*
@@ -28,7 +29,12 @@ export type Event = {
   food: string[];
   groupId: string;
   completed: boolean;
+  hostRatings?: number[];
+  foodRatings?: number[];
+  overallRatings?: number[];
+  ratedUsers?: string[];
 };
+
 
 /*
  defining the zustand store
@@ -41,6 +47,8 @@ type EventStore = {
   loadGroupEvents: (groupId: string) => Promise<void>;
   removeEvent: (eventId: string, groupId: string) => Promise<void>;
   markEventsAsCompleted: () => Promise<void>;
+  submitRating: (eventId: string, groupId: string, hostRating: number, foodRating: number, overallRating: number) => Promise<void>;
+  isRatedUser: (eventId: string, groupId: string) => Promise<boolean>;
 };
 
 /*
@@ -50,7 +58,83 @@ zustand updates state and keeps data in sync
 */
 export const useEventStore = create<EventStore>((set) => ({
   events: [],
+  
+  isRatedUser: async (eventId: string, groupId: string) => {
+    try {
+      const authId = useAuthStore.getState().user?.uid;
+      if (!authId) {
+        console.error("eventStore => No user is logged in.");
+        return true;
+      }
+      const eventRef = doc(db, `groups/${groupId}/events`, eventId);
+      const eventDoc = await getDoc(eventRef);
+      if (!eventDoc.exists()) {
+        console.error("eventStore => Event not found:", eventId);
+        return true;
+      }
+      const eventData = eventDoc.data() as Event;
+      if (eventData.ratedUsers?.includes(authId)) {
+        return true;
+      }
+      return false;
+    } 
+    catch (error) {
+      console.error("eventStore => Error checking rated user:", error);
+      return true;
+    }
+  },
 
+  /*
+  Function to submit ratings for an event
+  - nico
+  */
+  submitRating: async (eventId: string, groupId: string, hostRating: number, foodRating: number, overallRating: number) => {
+    try {
+      const authId = useAuthStore.getState().user?.uid;
+      if (!authId) {
+        console.error("eventStore => No user is logged in.");
+        return;
+      }
+
+      const eventRef = doc(db, `groups/${groupId}/events`, eventId);
+      const eventDoc = await getDoc(eventRef);
+      if (!eventDoc.exists()) {
+        console.error("eventStore => Event not found:", eventId);
+        return;
+      }
+
+      const eventData = eventDoc.data() as Event;
+      if (eventData.ratedUsers?.includes(authId)) {
+        console.warn("eventStore => User has already rated this event.");
+        return;
+      }
+
+      await updateDoc(eventRef, {
+        hostRatings: [...(eventData.hostRatings || []), hostRating],
+        foodRatings: [...(eventData.foodRatings || []), foodRating],
+        overallRatings: [...(eventData.overallRatings || []), overallRating],
+        ratedUsers: [...(eventData.ratedUsers || []), authId],
+      });
+
+      set((state) => ({
+        events: state.events.map((event) =>
+          event.id === eventId
+            ? {
+                ...event,
+                hostRatings: [...(event.hostRatings || []), hostRating],
+                foodRatings: [...(event.foodRatings || []), foodRating],
+                overallRatings: [...(event.overallRatings || []), overallRating],
+                ratedUsers: [...(event.ratedUsers || []), authId],
+              }
+            : event
+        ),
+      }));
+
+      console.log("eventStore => Rating submitted successfully.");
+    } catch (error) {
+      console.error("eventStore => Error submitting rating:", error);
+    }
+  },
   /*
   Function to check and mark expired events as completed
   - nico
@@ -162,3 +246,9 @@ export const useEventStore = create<EventStore>((set) => ({
     }
   },
 }));
+
+export const calculateAverageRating = (ratings?: number[]): number => {
+  if (!ratings || ratings.length === 0) return 0;
+  const sum = ratings.reduce((acc, rating) => acc + rating, 0);
+  return parseFloat((sum / ratings.length).toFixed(1));
+}

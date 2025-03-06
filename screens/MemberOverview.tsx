@@ -60,7 +60,9 @@ export default function MemberOverviewScreen() {
         <FlatList
           data={members}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <MemberTile userId={item.id} userName={item.name} />}
+          renderItem={({ item }) => (
+            <MemberTile userId={item.id} userName={item.name} groupId={groupId} />
+          )}
         />
       ) : (
         <View style={styles.emptyContainer}>

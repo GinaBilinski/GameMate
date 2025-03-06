@@ -1,42 +1,69 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, SafeAreaView, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { useNavigation, useRoute, NavigationProp } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/Navigation";
-import { db } from "../services/firebaseConfig";
-import { doc, updateDoc, arrayUnion } from "firebase/firestore";
+import { useEventStore, calculateAverageRating } from "../stores/eventStore";
 
 export default function RateEventScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute();
   const { eventId, groupId } = route.params as { eventId: string; groupId: string };
 
+  const { events, submitRating, isRatedUser } = useEventStore();
+
+  // Find the event from Zustand state
+  const event = events.find((e) => e.id === eventId);
+
+  const [hasRated, setHasRated] = useState<boolean>(false);
+
   // State for ratings
   const [hostRating, setHostRating] = useState<number | null>(null);
   const [foodRating, setFoodRating] = useState<number | null>(null);
   const [experienceRating, setExperienceRating] = useState<number | null>(null);
 
-  // Function to submit rating to Firestore
-  const submitRating = async () => {
+  // State for average ratings
+  const [avgHostRating, setAvgHostRating] = useState(0);
+  const [avgFoodRating, setAvgFoodRating] = useState(0);
+  const [avgOverallRating, setAvgOverallRating] = useState(0);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const rated = await isRatedUser(eventId, groupId);
+        setHasRated(rated);
+      } catch (error) {
+        console.error("RateEventScreen => Failed to check rating status:", error);
+      }
+    })();
+  }, [eventId, groupId]);
+
+  useEffect(() => {
+    if (event) {
+      setAvgHostRating(calculateAverageRating(event.hostRatings));
+      setAvgFoodRating(calculateAverageRating(event.foodRatings));
+      setAvgOverallRating(calculateAverageRating(event.overallRatings));
+    }
+  }, [event]);
+
+  // Function to submit rating
+  const handleSubmitRating = async () => {
     if (hostRating === null || foodRating === null || experienceRating === null) {
       Alert.alert("Fehler", "Bitte alle Kategorien bewerten.");
       return;
     }
 
     try {
-      const eventRef = doc(db, `groups/${groupId}/events`, eventId);
-      await updateDoc(eventRef, {
-        ratings: arrayUnion({
-          host: hostRating,
-          food: foodRating,
-          experience: experienceRating,
-          timestamp: new Date().toISOString(),
-        }),
-      });
+      await submitRating(eventId, groupId, hostRating, foodRating, experienceRating);
+      setHasRated(true);
+
+      // Update displayed averages
+      setAvgHostRating(calculateAverageRating([...event?.hostRatings || [], hostRating]));
+      setAvgFoodRating(calculateAverageRating([...event?.foodRatings || [], foodRating]));
+      setAvgOverallRating(calculateAverageRating([...event?.overallRatings || [], experienceRating]));
 
       Alert.alert("Erfolgreich", "Danke für deine Bewertung!");
-      navigation.goBack(); // Navigate back after submitting
     } catch (error) {
-      console.error("Fehler beim Speichern der Bewertung:", error);
+      console.error("RateEventScreen => Error submitting rating:", error);
       Alert.alert("Fehler", "Die Bewertung konnte nicht gespeichert werden.");
     }
   };
@@ -50,20 +77,31 @@ export default function RateEventScreen() {
         <Text style={styles.title}>Event bewerten</Text>
       </View>
 
-      <View style={styles.ratingContainer}>
-        <RatingSection title="Gastgeber bewerten" rating={hostRating} setRating={setHostRating} />
-        <RatingSection title="Essen bewerten" rating={foodRating} setRating={setFoodRating} />
-        <RatingSection title="Gesamterlebnis bewerten" rating={experienceRating} setRating={setExperienceRating} />
-      </View>
+      {hasRated ? (
+        <View style={styles.averageContainer}>
+          <Text style={styles.averageTitle}>Durchschnittliche Bewertungen:</Text>
+          <Text style={styles.averageText}>Gastgeber: {avgHostRating} / 10</Text>
+          <Text style={styles.averageText}>Essen: {avgFoodRating} / 10</Text>
+          <Text style={styles.averageText}>Gesamterlebnis: {avgOverallRating} / 10</Text>
+        </View>
+      ) : (
+        <>
+          <View style={styles.ratingContainer}>
+            <RatingSection title="Gastgeber bewerten" rating={hostRating} setRating={setHostRating} />
+            <RatingSection title="Essen bewerten" rating={foodRating} setRating={setFoodRating} />
+            <RatingSection title="Gesamterlebnis bewerten" rating={experienceRating} setRating={setExperienceRating} />
+          </View>
 
-      <TouchableOpacity style={styles.submitButton} onPress={submitRating}>
-        <Text style={styles.submitText}>Bewertung absenden</Text>
-      </TouchableOpacity>
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmitRating}>
+            <Text style={styles.submitText}>Bewertung absenden</Text>
+          </TouchableOpacity>
+        </>
+      )}
     </SafeAreaView>
   );
 }
 
-// Component for rendering rating options (0-10)
+// Component for rating section (0-10)
 const RatingSection = ({ title, rating, setRating }: { title: string; rating: number | null; setRating: (value: number) => void }) => {
   return (
     <View style={styles.section}>
@@ -82,7 +120,6 @@ const RatingSection = ({ title, rating, setRating }: { title: string; rating: nu
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
@@ -150,7 +187,8 @@ const styles = StyleSheet.create({
   submitButton: {
     marginTop: 20,
     backgroundColor: "#FF5733",
-    paddingVertical: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 30,
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
@@ -159,5 +197,25 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  averageContainer: {
+    marginTop: 30,
+    padding: 20,
+    backgroundColor: "#E5E5E5",
+    borderRadius: 10,
+    width: "90%",
+    alignItems: "center",
+    alignSelf: "center",
+  },
+  averageTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+    color: "#1C313B",
+  },
+  averageText: {
+    fontSize: 16,
+    color: "#1C313B",
+    marginVertical: 2,
   },
 });
