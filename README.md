@@ -1,3 +1,7 @@
+Gina 06.03.2025
+- Chat erstellt - wobei der Name noch nciht richtig angezeigt wird - muss mir erst deine Änderungen der Stores mir anschauen
+- Abstimmungen möglich für Essen und Spiele 
+
 Gina 21.2.2025
 - Events werden jetzt **nach Datum** sortiert 
 - Vergangene Events werden nicht mehr in geplanten Events angezeigt

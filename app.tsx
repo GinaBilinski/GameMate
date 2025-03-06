@@ -1,5 +1,6 @@
 // app.tsx
 import React, { useEffect, useState } from "react";
+import { StatusBar } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { useFonts } from "expo-font";
@@ -24,5 +25,13 @@ export default function App() {
   
 
   // Navigation der App mit Stack-Navigation -gina
-  return <Navigation />;
+  return (
+    <>
+      {/* StatusBar setzen, damit die Icons weiß sind */}
+      <StatusBar barStyle="light-content" backgroundColor="#1C313B" />
+      
+      {/* Navigation der App mit Stack-Navigation */}
+      <Navigation />
+    </>
+  );
 }
