@@ -40,7 +40,8 @@ export default function GroupOverviewScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
         <CustomText style={styles.title}>{group?.name}</CustomText>
@@ -77,7 +78,7 @@ export default function GroupOverviewScreen() {
 
       {/* Vergangene Events */}
       <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("PastEvents", { groupId })}>
-        <Text style={styles.cardTitle}>Vergangene Events</Text>
+        <CustomText style={styles.cardTitle}>Vergangene Events</CustomText>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -103,7 +104,7 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: 24,
-    color: "white",
+    color: "#C7E850",
   },
   title: {
     fontSize: 22,

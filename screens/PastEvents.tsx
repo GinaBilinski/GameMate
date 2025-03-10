@@ -3,6 +3,7 @@ import { View, SafeAreaView, Text, StyleSheet, TouchableOpacity } from "react-na
 import { useNavigation, useRoute, NavigationProp, useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/Navigation";
 import { Event, useEventStore } from "../stores/eventStore";
+import CustomText from "../components/CustomText";
 
 
 export default function PastEventsScreen() {
@@ -31,14 +32,15 @@ export default function PastEventsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Vergangene Events</Text>
+        <CustomText style={styles.title}>Vergangene Events</CustomText>
       </View>
 
       {groupEvents.length === 0 ? (
-        <Text style={styles.noEventsText}>Keine geplanten Events</Text>
+        <CustomText style={styles.noEventsText}>Keine geplanten Events</CustomText>
       ) : (
         groupEvents.map((event) => (
           <TouchableOpacity
@@ -49,8 +51,8 @@ export default function PastEventsScreen() {
               groupId, 
             })}
           >
-            <Text style={styles.cardTitle}>{event.date} - {event.time}</Text>
-            <Text style={styles.cardText}>Bei: {event.host}</Text>
+            <CustomText style={styles.cardTitle}>{event.date} - {event.time}</CustomText>
+            <CustomText style={styles.cardText}>Bei: {event.host}</CustomText>
           </TouchableOpacity>
         ))
       )}
@@ -78,7 +80,7 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: 24,
-    color: "white",
+    color: "#C7E850",
   },
   title: {
     fontSize: 22,

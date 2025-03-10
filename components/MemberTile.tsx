@@ -3,6 +3,7 @@ import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/Navigation";
 import { useGroupStore } from "../stores/groupStore";
 import { useState } from "react";
+import CustomText from "../components/CustomText";
 
 /*
  Reusable component for displaying a group member as a clickable tile
@@ -43,11 +44,11 @@ const MemberTile: React.FC<MemberTileProps> = ({ userId, userName, groupId }) =>
       onLongPress={handleLongPress} 
       onPressOut={handlePressOut}
     >
-      <Text style={styles.name}>{userName}</Text>
+      <CustomText style={styles.name}>{userName}</CustomText>
 
       {showRemove && (
         <TouchableOpacity style={styles.removeButton} onPress={handleRemoveMember}>
-          <Text style={styles.removeText}>Remove</Text>
+          <CustomText style={styles.removeText}>Remove</CustomText>
         </TouchableOpacity>
       )}
     </TouchableOpacity>

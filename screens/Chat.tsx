@@ -128,7 +128,8 @@ export default function ChatScreen() {
     <View style={styles.container}>
       {/* Fixierter Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
         <CustomText style={styles.title}>{group?.name || "Chat"}</CustomText>
@@ -175,7 +176,7 @@ export default function ChatScreen() {
           onChangeText={setNewMessage}
         />
         <TouchableOpacity onPress={handleSendMessage} style={styles.sendButton}>
-          <AntDesign name="arrowright" size={20} color="white" />
+          <AntDesign name="arrowright" size={30} color="#1C313B" />
         </TouchableOpacity>
       </View>
     </View>
@@ -205,7 +206,7 @@ const styles = StyleSheet.create({
   },
   backText: { 
     fontSize: 24, 
-    color: "white" 
+    color: "#C7E850" 
   },
   title: { 
     fontSize: 22, 
@@ -256,7 +257,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 15,
+    paddingHorizontal: 20,
     paddingTop: 15,
     paddingBottom: 15,
     backgroundColor: "#C7E85D",
@@ -272,10 +273,20 @@ const styles = StyleSheet.create({
     fontSize: 16, 
     fontFamily: "SpaceMono", 
   },
-  sendButton: { 
-    backgroundColor: "#A3D33D", 
-    borderRadius: 20, 
-    padding: 10, 
-    marginLeft: 10 
+  sendButton: {
+    backgroundColor: "#C7E850", 
+    borderRadius: 30, 
+    padding: 5, 
+    marginLeft: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    // Schatten für iOS
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    // Elevation für Android
+    elevation: 5,
   },
+  
 });

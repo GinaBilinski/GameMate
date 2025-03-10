@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/Navigation";
+import CustomText from "../components/CustomText";
 
 /*
  Reusable component for displaying a group as a clickable tile
@@ -21,9 +22,9 @@ const GroupTile: React.FC<GroupTileProps> = ({ groupId: id, groupName, nextEvent
         style={styles.tile} 
         onPress={() => navigation.navigate("GroupOverview", { groupId: id })}
       >
-        <Text style={styles.name}>{groupName}</Text>
-        <Text style={styles.host}>{nextEventHost}</Text>
-        <Text style={styles.date}>{nextEventDate}</Text>
+        <CustomText style={styles.name}>{groupName}</CustomText>
+        <CustomText style={styles.host}>{nextEventHost}</CustomText>
+        <CustomText style={styles.date}>{nextEventDate}</CustomText>
       </TouchableOpacity>
     );
   };

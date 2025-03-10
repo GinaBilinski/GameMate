@@ -5,6 +5,7 @@ import { AntDesign } from "@expo/vector-icons";
 import { db } from "../services/firebaseConfig";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useAuthStore } from "../stores/authStore"; // Firebase Auth Store
+import CustomText from "../components/CustomText";
 
 export default function EventDetailsScreen() {
   const navigation = useNavigation();
@@ -109,23 +110,25 @@ export default function EventDetailsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Event Details</Text>
+        <CustomText style={styles.title}>Event Details</CustomText>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Datum: {date}</Text>
-        <Text style={styles.cardText}>Uhrzeit: {time}</Text>
-        <Text style={styles.cardText}>Bei: {host}</Text>
+        <CustomText style={styles.cardTitle}>Datum: {date}</CustomText>
+        <CustomText style={styles.cardText}>Uhrzeit: {time}</CustomText>
+        <CustomText style={styles.cardText}>Bei: {host}</CustomText>
       </View>
 
       <View style={styles.voteCard}>
-        <Text style={styles.voteCardTitle}>Für Essen und Spiele abstimmen:</Text>
+        <CustomText style={styles.voteCardTitle}>Für Essen und Spiele abstimmen:</CustomText>
 
+        {/* Spiele */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Spiele</Text>
+          <CustomText style={styles.cardTitle}>Spiele</CustomText>
           <FlatList
             data={games}
             keyExtractor={(item, index) => index.toString()}
@@ -135,17 +138,17 @@ export default function EventDetailsScreen() {
                 onPress={() => handleVote("games", index)}
                 disabled={userVotedGame} // Nutzer kann nur einmal abstimmen
               >
-                <Text style={styles.listItem}>{item.name}</Text>
+                <CustomText style={styles.listItem}>{item.name}</CustomText>
                 <View style={styles.voteDisplay}>
-                  <Text style={styles.voteCount}>{item.votes}</Text>
-                  {!userVotedGame && <AntDesign name="pluscircleo" size={20} color="green" />}
+                  <CustomText style={styles.voteCount}>{item.votes}</CustomText>
+                  {!userVotedGame && <AntDesign name="pluscircleo" size={18} color="green" />}
                 </View>
               </TouchableOpacity>
             )}
           />
           <View style={styles.addRow}>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { width: "91%", fontFamily: "SpaceMono", fontSize: styles.placeholderText.fontSize }]}
               placeholder="Spiel hinzufügen"
               value={newGame}
               onChangeText={setNewGame}
@@ -155,9 +158,10 @@ export default function EventDetailsScreen() {
             </TouchableOpacity>
           </View>
         </View>
-
+        
+        {/* Essen */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Essen</Text>
+          <CustomText style={styles.cardTitle}>Essen</CustomText>
           <FlatList
             data={food}
             keyExtractor={(item, index) => index.toString()}
@@ -167,17 +171,17 @@ export default function EventDetailsScreen() {
                 onPress={() => handleVote("food", index)}
                 disabled={userVotedFood} // Nutzer kann nur einmal abstimmen
               >
-                <Text style={styles.listItem}>{item.name}</Text>
+                <CustomText style={styles.listItem}>{item.name}</CustomText>
                 <View style={styles.voteDisplay}>
-                  <Text style={styles.voteCount}>{item.votes}</Text>
-                  {!userVotedFood && <AntDesign name="pluscircleo" size={20} color="green" />}
+                  <CustomText style={styles.voteCount}>{item.votes}</CustomText>
+                  {!userVotedFood && <AntDesign name="pluscircleo" size={18} color="green" />}
                 </View>
               </TouchableOpacity>
             )}
           />
           <View style={styles.addRow}>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { width: "91%", fontFamily: "SpaceMono", fontSize: styles.placeholderText.fontSize }]}
               placeholder="Essen hinzufügen"
               value={newFood}
               onChangeText={setNewFood}
@@ -211,12 +215,17 @@ const styles = StyleSheet.create({
   },
   backText: { 
     fontSize: 24, 
-    color: "white" 
+    color: "#C7E85D" 
   },
   title: { 
     fontSize: 22, 
     fontWeight: "bold", 
     color: "white" 
+  },
+  placeholderText: {
+    fontSize: 16,
+    color: "#A9A9A9",
+    fontFamily: "SpaceMono",
   },
   card: { 
     width: "95%", 
@@ -249,7 +258,7 @@ const styles = StyleSheet.create({
     flexDirection: "row", 
     alignItems: "center", 
     justifyContent: "space-between", 
-    paddingVertical: 10 
+    paddingVertical: 5, 
   },
   voteDisplay: { 
     flexDirection: "row", 

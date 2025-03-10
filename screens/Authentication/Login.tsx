@@ -1,8 +1,9 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
-import { useState } from "react";
+import React, { useState } from "react";
+import { View, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { useAuthStore } from "../../stores/authStore";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../navigation/Navigation";
+import CustomText from "../../components/CustomText";
 
 /*
  Login-Screen für die App
@@ -17,20 +18,20 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+      <CustomText style={styles.title}>Einloggen</CustomText>
 
       <TextInput
-        style={[styles.input, { fontSize: styles.placeholderText.fontSize, color: "black" }]}
+        style={[styles.input, { fontFamily: "SpaceMono" }]}
         placeholder="E-Mail"
         placeholderTextColor={styles.placeholderText.color}
         value={email}
-        onChangeText={(text) => setEmail(text.toLowerCase())} 
-        autoCapitalize="none" 
-        keyboardType="email-address" 
+        onChangeText={(text) => setEmail(text.toLowerCase())}
+        autoCapitalize="none"
+        keyboardType="email-address"
       />
 
       <TextInput
-        style={[styles.input, { fontSize: styles.placeholderText.fontSize, color: "black" }]}
+        style={[styles.input, { fontFamily: "SpaceMono" }]}
         placeholder="Passwort"
         placeholderTextColor={styles.placeholderText.color}
         secureTextEntry
@@ -40,12 +41,14 @@ export default function LoginScreen() {
 
       {/* Login Button */}
       <TouchableOpacity style={styles.button} onPress={() => login(email, password)}>
-        <Text style={styles.buttonText}>Login</Text>
+        <CustomText style={styles.buttonText}>Login</CustomText>
       </TouchableOpacity>
 
       {/* Registrierungs Button */}
       <TouchableOpacity onPress={() => navigation.navigate("Register")}>
-        <Text style={styles.register}>Don't have an account yet? Click here.</Text>
+        <CustomText style={styles.register}>
+          Neu bei GameMate? 
+        </CustomText>
       </TouchableOpacity>
     </View>
   );
@@ -73,7 +76,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   placeholderText: {
-    fontSize: 16,
+    fontSize: 18,
     color: "#A9A9A9",
   },
   button: {
@@ -83,14 +86,22 @@ const styles = StyleSheet.create({
     marginTop: 10,
     width: "100%",
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 2,
+    elevation: 3,
   },
   buttonText: {
     color: "black",
     fontWeight: "bold",
+    fontFamily: "SpaceMono",
+    fontSize: 18,
   },
   register: {
     color: "white",
     marginTop: 10,
     textDecorationLine: "underline",
+    fontFamily: "SpaceMono",
   },
 });

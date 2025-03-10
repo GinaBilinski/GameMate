@@ -4,6 +4,7 @@ import { useNavigation, useRoute, NavigationProp, useFocusEffect } from "@react-
 import { RootStackParamList } from "../navigation/Navigation";
 import { Event, useEventStore } from "../stores/eventStore";
 import { parse, compareAsc } from 'date-fns';
+import CustomText from "../components/CustomText";
 
 
 export default function NextEventsScreen() {
@@ -36,14 +37,15 @@ export default function NextEventsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Geplante Events</Text>
+        <CustomText style={styles.title}>Geplante Events</CustomText>
       </View>
 
       {groupEvents.length === 0 ? (
-        <Text style={styles.noEventsText}>Keine geplanten Events</Text>
+        <CustomText style={styles.noEventsText}>Keine geplanten Events</CustomText>
       ) : (
         groupEvents.map((event) => (
           <TouchableOpacity
@@ -57,8 +59,8 @@ export default function NextEventsScreen() {
               host: event.host 
             })}
           >
-            <Text style={styles.cardTitle}>{event.date} - {event.time}</Text>
-            <Text style={styles.cardText}>Bei: {event.host}</Text>
+            <CustomText style={styles.cardTitle}>{event.date} - {event.time}</CustomText>
+            <CustomText style={styles.cardText}>Bei: {event.host}</CustomText>
           </TouchableOpacity>
         ))
       )}
@@ -86,7 +88,7 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: 24,
-    color: "white",
+    color: "#C7E850",
   },
   title: {
     fontSize: 22,

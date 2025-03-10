@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useGroupStore } from "../stores/groupStore";
 import { useUserStore } from "../stores/userStore";
 import MemberTile from "../components/MemberTile";
+import CustomText from "../components/CustomText";
 
 /*
   Screen for displaying group members
@@ -48,10 +49,11 @@ export default function MemberOverviewScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Group Members</Text>
+        <CustomText style={styles.title}>Gruppenmitglieder</CustomText>
       </View>
 
       {loading ? (
@@ -66,7 +68,7 @@ export default function MemberOverviewScreen() {
         />
       ) : (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No members found in this group.</Text>
+          <CustomText style={styles.emptyText}>Keine Gruppenmitglieder</CustomText>
         </View>
       )}
     </SafeAreaView>
@@ -93,7 +95,7 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: 24,
-    color: "white",
+    color: "#C7E850",
   },
   title: {
     fontSize: 22,

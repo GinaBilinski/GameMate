@@ -52,9 +52,19 @@ function MainDrawer() {
     <Drawer.Navigator
       screenOptions={{
         headerShown: false, 
-        drawerActiveTintColor: "white",
+        drawerActiveTintColor: "#C7E850",
         drawerInactiveTintColor: "#ccc",
-        drawerStyle: { backgroundColor: "#1C313B" },
+        drawerStyle: { backgroundColor: "#5B7F78" },
+        drawerActiveBackgroundColor: "#5B7F78", // z.B. dunkleres Grün
+        drawerItemStyle: {
+          borderRadius: 10, // Rundung
+          marginHorizontal: 10, // etwas Abstand vom Rand
+        },
+    
+        drawerLabelStyle: {
+          fontFamily: "SpaceMono", // Schriftart
+          fontSize: 19,           // optional
+        },
       }}
     >
       <Drawer.Screen 
@@ -65,7 +75,7 @@ function MainDrawer() {
         }}
       />
       <Drawer.Screen 
-        name="Settings" 
+        name="Einstellungen" 
         component={SettingsScreen} 
         options={{
           drawerIcon: ({ color }) => <Ionicons name="settings-outline" size={22} color={color} />,

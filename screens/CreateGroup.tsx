@@ -7,6 +7,7 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../services/firebaseConfig";
 import { RootStackParamList } from "../navigation/Navigation";
 import { AntDesign } from "@expo/vector-icons";
+import CustomText from "../components/CustomText";
 
 /*
  Screen for creating a new group
@@ -33,7 +34,10 @@ export default function CreateGroupScreen() {
       if (!querySnapshot.empty) {
         const userDoc = querySnapshot.docs[0];
         const userData = userDoc.data();
-        setMembers((prevMembers) => [...prevMembers, { id: userDoc.id, email: userData.email, name: userData.name }]);
+        setMembers((prevMembers) => [
+          ...prevMembers,
+          { id: userDoc.id, email: userData.email, name: userData.name },
+        ]);
         setMemberEmails("");
       } else {
         console.error("Kein Nutzer mit dieser E-Mail gefunden.");
@@ -68,29 +72,33 @@ export default function CreateGroupScreen() {
     <SafeAreaView style={styles.container}>
       {/* Header mit Zurück-Button */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <AntDesign name="arrowleft" size={24} color="white" />
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+        >
+          <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Gruppe erstellen</Text>
+        <CustomText style={styles.title}>Gruppe erstellen</CustomText>
       </View>
 
       <View style={styles.card}>
         {/* Gruppenname */}
-        <Text style={styles.label}>Gruppenname:</Text>
+        <CustomText style={styles.label}>Gruppenname:</CustomText>
         <TextInput
-          style={styles.input}
-          placeholder="Enter group name"
+          style={[styles.input, { fontFamily: "SpaceMono" }]}
+          placeholder="Name der Gruppe eingeben..."
           placeholderTextColor="#A9A9A9"
           value={groupName}
           onChangeText={setGroupName}
         />
 
         {/* Mitglieder hinzufügen */}
-        <Text style={styles.label}>Mitglieder per E-Mail hinzufügen:</Text>
+        <CustomText style={styles.label}>Mitglieder per E-Mail hinzufügen:</CustomText>
         <View style={styles.addRow}>
           <TextInput
-            style={styles.inputFlex}
-            placeholder="E-Mail eingeben"
+            style={[styles.inputFlex, { fontFamily: "SpaceMono" }]}
+            placeholder="E-Mail eingeben..."
             placeholderTextColor="#A9A9A9"
             value={memberEmails}
             onChangeText={(text) => setMemberEmails(text.toLowerCase())}
@@ -108,7 +116,9 @@ export default function CreateGroupScreen() {
           keyExtractor={(item, index) => item.id || index.toString()}
           renderItem={({ item }) => (
             <View style={styles.listRow}>
-              <Text style={styles.listItem}>{item.name} ({item.email})</Text>
+              <CustomText style={styles.listItem}>
+                {item.name} ({item.email})
+              </CustomText>
               <TouchableOpacity onPress={() => setMembers(members.filter((m) => m.id !== item.id))}>
                 <AntDesign name="closecircle" size={18} color="#1C313B" />
               </TouchableOpacity>
@@ -118,7 +128,7 @@ export default function CreateGroupScreen() {
 
         {/* Gruppe erstellen */}
         <TouchableOpacity style={styles.saveButton} onPress={handleCreateGroup}>
-          <Text style={styles.saveText}>Speichern</Text>
+          <CustomText style={styles.saveText}>Speichern</CustomText>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -144,10 +154,15 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 15,
   },
+  backText: {
+    fontSize: 24,
+    color: "#C7E850",
+  },
   title: {
     fontSize: 22,
     fontWeight: "bold",
     color: "white",
+    fontFamily: "SpaceMono",
   },
   card: {
     width: "95%",
@@ -161,6 +176,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     marginTop: 10,
+    fontFamily: "SpaceMono",
   },
   input: {
     width: "100%",
@@ -190,7 +206,11 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 8,
     marginLeft: 10,
-
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 3,
   },
   listRow: {
     flexDirection: "row",
@@ -202,6 +222,7 @@ const styles = StyleSheet.create({
   listItem: {
     fontSize: 16,
     color: "#1C313B",
+    fontFamily: "SpaceMono",
   },
   saveButton: {
     backgroundColor: "#C7E85D",
@@ -210,10 +231,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
     marginTop: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 3,
   },
   saveText: {
     fontSize: 16,
     fontWeight: "bold",
+    fontFamily: "SpaceMono",
   },
 });
-

@@ -1,82 +1,103 @@
-import { View, SafeAreaView, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import React from "react";
+import { View, SafeAreaView, StyleSheet, TouchableOpacity } from "react-native";
+import { useNavigation, DrawerActions } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../stores/authStore";
+import CustomText from "../../components/CustomText";
 
 export default function LogoutScreen() {
-    const navigation = useNavigation();
-    const logout = useAuthStore((state) => state.logout);
+  const navigation = useNavigation();
+  const logout = useAuthStore((state) => state.logout);
 
-    const handleLogout = async () => {
-        try {
-            await logout(); // Call logout from the store
-        } catch (error) {
-            console.error("Logout failed:", error);
-        }
-    };
+  const handleLogout = async () => {
+    try {
+      await logout(); // Logout aus dem Store aufrufen
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
-    return (
+  // Menü-Button öffnet den Drawer
+  const openMenu = () => {
+    navigation.dispatch(DrawerActions.openDrawer());
+  };
+
+  return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backText}>←</Text>
+        <TouchableOpacity onPress={openMenu} style={styles.menuButton}
+        hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
+          <Ionicons name="menu" size={28} color="#C7E850" />
         </TouchableOpacity>
-        <Text style={styles.title}>Logout</Text>
-      </View> 
+        <CustomText style={styles.title}>Logout</CustomText>
+      </View>
 
-        <View style={styles.innerContainer}>
-            <Text style={styles.text}>Are you sure you want to logout?</Text>
-            <TouchableOpacity onPress={handleLogout} style={styles.button}>
-                <Text style={styles.buttonText}>Logout</Text>
-            </TouchableOpacity>
-        </View>
+      <View style={styles.card}>
+        <CustomText style={styles.cardText}>
+          Bist du dir sicher, dass du dich ausloggen möchtest?
+        </CustomText>
+        <TouchableOpacity onPress={handleLogout} style={styles.button}>
+          <CustomText style={styles.buttonText}>Ausloggen</CustomText>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
-    );
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#1C313B",
-        paddingTop: 20,
-      },
-      header: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        width: "100%",
-        paddingVertical: 15,
-        position: "relative",
-      },
-      backButton: {
-        position: "absolute",
-        left: 15,
-      },
-      backText: {
-        fontSize: 24,
-        color: "white",
-      },
-      title: {
-        fontSize: 22,
-        fontWeight: "bold",
-        color: "white",
-      },
-    innerContainer: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    text: {
-        fontSize: 18,
-        marginBottom: 20,
-        color: "white",
-    },
-    button: {
-        backgroundColor: "#FF5733",
-        padding: 10,
-        borderRadius: 5,
-    },
-    buttonText: {
-        color: "white",
-        fontSize: 16,
-    },
+  container: {
+    flex: 1,
+    backgroundColor: "#1C313B",
+    paddingTop: 20,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    paddingVertical: 15,
+    position: "relative",
+  },
+  menuButton: {
+    position: "absolute",
+    left: 15,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "white",
+  },
+  card: {
+    width: "95%",
+    backgroundColor: "#E5E5E5",
+    borderRadius: 10,
+    padding: 20,
+    marginVertical: 20,
+    alignSelf: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  cardText: {
+    fontSize: 18,
+    color: "#1C313B", 
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: "#C7E85D",
+    padding: 10,
+    borderRadius: 5,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  buttonText: {
+    color: "#1C313B",
+    fontSize: 16,
+  },
 });

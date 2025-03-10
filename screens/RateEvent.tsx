@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { View, SafeAreaView, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import { 
+  View, 
+  SafeAreaView, 
+  Text, 
+  TouchableOpacity, 
+  StyleSheet, 
+  FlatList, 
+  Alert 
+} from "react-native";
 import { useNavigation, useRoute, NavigationProp } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/Navigation";
 import { useEventStore, calculateAverageRating } from "../stores/eventStore";
+import CustomText from "../components/CustomText";
 
 export default function RateEventScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -10,18 +19,13 @@ export default function RateEventScreen() {
   const { eventId, groupId } = route.params as { eventId: string; groupId: string };
 
   const { events, submitRating, isRatedUser } = useEventStore();
-
-  // Find the event from Zustand state
   const event = events.find((e) => e.id === eventId);
 
   const [hasRated, setHasRated] = useState<boolean>(false);
-
-  // State for ratings
   const [hostRating, setHostRating] = useState<number | null>(null);
   const [foodRating, setFoodRating] = useState<number | null>(null);
   const [experienceRating, setExperienceRating] = useState<number | null>(null);
 
-  // State for average ratings
   const [avgHostRating, setAvgHostRating] = useState(0);
   const [avgFoodRating, setAvgFoodRating] = useState(0);
   const [avgOverallRating, setAvgOverallRating] = useState(0);
@@ -45,7 +49,6 @@ export default function RateEventScreen() {
     }
   }, [event]);
 
-  // Function to submit rating
   const handleSubmitRating = async () => {
     if (hostRating === null || foodRating === null || experienceRating === null) {
       Alert.alert("Fehler", "Bitte alle Kategorien bewerten.");
@@ -55,12 +58,9 @@ export default function RateEventScreen() {
     try {
       await submitRating(eventId, groupId, hostRating, foodRating, experienceRating);
       setHasRated(true);
-
-      // Update displayed averages
       setAvgHostRating(calculateAverageRating([...event?.hostRatings || [], hostRating]));
       setAvgFoodRating(calculateAverageRating([...event?.foodRatings || [], foodRating]));
       setAvgOverallRating(calculateAverageRating([...event?.overallRatings || [], experienceRating]));
-
       Alert.alert("Erfolgreich", "Danke für deine Bewertung!");
     } catch (error) {
       console.error("RateEventScreen => Error submitting rating:", error);
@@ -70,19 +70,25 @@ export default function RateEventScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()} 
+          style={styles.backButton}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+        >
+          {/* Für den Zurück-Pfeil nutzen wir den Standard-Text, damit er unverändert bleibt */}
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Event bewerten</Text>
+        <CustomText style={styles.title}>Event bewerten</CustomText>
       </View>
 
       {hasRated ? (
         <View style={styles.averageContainer}>
-          <Text style={styles.averageTitle}>Durchschnittliche Bewertungen:</Text>
-          <Text style={styles.averageText}>Gastgeber: {avgHostRating} / 10</Text>
-          <Text style={styles.averageText}>Essen: {avgFoodRating} / 10</Text>
-          <Text style={styles.averageText}>Gesamterlebnis: {avgOverallRating} / 10</Text>
+          <CustomText style={styles.averageTitle}>Durchschnittliche Bewertungen:</CustomText>
+          <CustomText style={styles.averageText}>Gastgeber: {avgHostRating} / 10</CustomText>
+          <CustomText style={styles.averageText}>Essen: {avgFoodRating} / 10</CustomText>
+          <CustomText style={styles.averageText}>Gesamterlebnis: {avgOverallRating} / 10</CustomText>
         </View>
       ) : (
         <>
@@ -93,7 +99,7 @@ export default function RateEventScreen() {
           </View>
 
           <TouchableOpacity style={styles.submitButton} onPress={handleSubmitRating}>
-            <Text style={styles.submitText}>Bewertung absenden</Text>
+            <CustomText style={styles.submitText}>Bewertung absenden</CustomText>
           </TouchableOpacity>
         </>
       )}
@@ -105,7 +111,7 @@ export default function RateEventScreen() {
 const RatingSection = ({ title, rating, setRating }: { title: string; rating: number | null; setRating: (value: number) => void }) => {
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+      <CustomText style={styles.sectionTitle}>{title}</CustomText>
       <View style={styles.ratingRow}>
         {[...Array(11).keys()].map((num) => (
           <TouchableOpacity 
@@ -113,7 +119,7 @@ const RatingSection = ({ title, rating, setRating }: { title: string; rating: nu
             style={[styles.ratingNumber, rating === num && styles.selectedRating]} 
             onPress={() => setRating(num)}
           >
-            <Text style={styles.ratingText}>{num}</Text>
+            <CustomText style={styles.ratingText}>{num}</CustomText>
           </TouchableOpacity>
         ))}
       </View>
@@ -141,7 +147,7 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: 24,
-    color: "white",
+    color: "#C7E85D",
   },
   title: {
     fontSize: 22,
@@ -161,6 +167,7 @@ const styles = StyleSheet.create({
     color: "white",
     marginBottom: 10,
     textAlign: "center",
+    fontFamily: "SpaceMono",
   },
   ratingRow: {
     flexDirection: "row",
@@ -183,20 +190,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: "#1C313B",
+    fontFamily: "SpaceMono",
   },
   submitButton: {
-    marginTop: 20,
-    backgroundColor: "#FF5733",
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 10,
+    backgroundColor: "#C7E85D",
+    borderRadius: 5,
+    paddingVertical: 10,
     alignItems: "center",
-    justifyContent: "center",
+    width: "80%",
+    alignSelf: "center",
+    marginTop: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 3,
   },
   submitText: {
-    color: "white",
+    color: "#1C313B",
     fontSize: 18,
     fontWeight: "bold",
+    fontFamily: "SpaceMono",
   },
   averageContainer: {
     marginTop: 30,
@@ -212,10 +226,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 10,
     color: "#1C313B",
+    fontFamily: "SpaceMono",
   },
   averageText: {
     fontSize: 16,
     color: "#1C313B",
     marginVertical: 2,
+    fontFamily: "SpaceMono",
   },
 });

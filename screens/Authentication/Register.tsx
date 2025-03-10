@@ -1,13 +1,14 @@
-import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { View, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { useAuthStore } from "../../stores/authStore";
 import { useUserStore } from "@/stores/userStore";
 import { RootStackParamList } from "../../navigation/Navigation";
+import CustomText from "../../components/CustomText";
 
 /*
- Register screen - Allows users to create an account
- - nico
+  Register screen - Allows users to create an account
+  - nico
 */
 export default function RegisterScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -32,10 +33,10 @@ export default function RegisterScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Register</Text>
+      <CustomText style={styles.title}>Konto erstellen</CustomText>
 
       <TextInput 
-        style={[styles.input,{ fontSize: styles.placeholderText.fontSize, color: "black" }]}
+        style={[styles.input, { fontFamily: "SpaceMono" }]}
         placeholder="Name" 
         placeholderTextColor={styles.placeholderText.color}
         value={name} 
@@ -44,7 +45,7 @@ export default function RegisterScreen() {
       />
 
       <TextInput
-        style={[styles.input, { fontSize: styles.placeholderText.fontSize, color: "black" }]}
+        style={[styles.input, { fontFamily: "SpaceMono" }]}
         placeholder="E-Mail"
         placeholderTextColor={styles.placeholderText.color}
         value={email}
@@ -54,8 +55,8 @@ export default function RegisterScreen() {
       />
 
       <TextInput 
-        style={[styles.input, { fontSize: styles.placeholderText.fontSize, color: "black" }]}
-        placeholder="Password"
+        style={[styles.input, { fontFamily: "SpaceMono" }]}
+        placeholder="Passwort"
         placeholderTextColor={styles.placeholderText.color} 
         value={password} 
         onChangeText={setPassword} 
@@ -63,11 +64,11 @@ export default function RegisterScreen() {
       />
 
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Sign Up</Text>
+        <CustomText style={styles.buttonText}>Registrieren</CustomText>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-        <Text style={styles.login}>Already have an account? Log in</Text>
+        <CustomText style={styles.login}>Hast du schon ein Account?</CustomText>
       </TouchableOpacity>
     </View>
   );
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   placeholderText: {
-    fontSize: 16,
+    fontSize: 18,
     color: "#A9A9A9",
   },
   button: {
@@ -104,14 +105,22 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignItems: "center",
     width: "100%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 2,
+    elevation: 3,
   },
   buttonText: {
     fontSize: 16,
     fontWeight: "bold",
+    fontFamily: "SpaceMono",
+    color: "black",
   },
   login: {
     color: "white",
     marginTop: 10,
     textDecorationLine: "underline",
+    fontFamily: "SpaceMono",
   },
 });

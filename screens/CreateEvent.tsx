@@ -5,9 +5,10 @@ import { RootStackParamList } from "../navigation/Navigation";
 import { useEventStore } from "../stores/eventStore";
 import { useGroupStore } from "../stores/groupStore";
 import { AntDesign } from "@expo/vector-icons";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { db } from "../services/firebaseConfig";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import CustomText from "../components/CustomText";
 
 export default function CreateEventScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -27,7 +28,7 @@ export default function CreateEventScreen() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [members, setMembers] = useState<{ id: string; name: string }[]>([]);
 
-  // DateTimePicker
+  // DateTimePicker States
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
 
@@ -52,22 +53,19 @@ export default function CreateEventScreen() {
   }, [group]);
 
   /*
-  Gastgeber Rotation: überprüft, welche Gruppenmitglieder bereits als Gastgeber fungiert haben. 
-  Falls alle Mitglieder einmal Gastgeber waren, wird die Rotation zurückgesetzt 
-  (das Array usedHosts wird geleert).
+    Gastgeber Rotation: überprüft, welche Gruppenmitglieder bereits als Gastgeber fungiert haben.
+    Falls alle Mitglieder einmal Gastgeber waren, wird die Rotation zurückgesetzt 
+    (das Array usedHosts wird geleert).
   */
   const currentUsedHosts = group?.usedHosts || [];
   const availableMembers = members.filter(
     (member) => !currentUsedHosts.includes(member.id)
   );
-
-  // Wenn alle schon dran waren, kann man wieder alle auswählen
   const membersForDropdown = availableMembers.length > 0 ? availableMembers : members;
 
   const handleSaveEvent = async () => {
     if (!host) return;
-
-    const eventData = {host, date, time, games, food, groupId, completed: false,};
+    const eventData = { host, date, time, games, food, groupId, completed: false };
     await addEvent(eventData);
 
     // Erstelle die neue usedHosts-Liste
@@ -82,25 +80,28 @@ export default function CreateEventScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backText}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>Event Planen</Text>
+      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}
+  hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
+  <Text style={styles.backText}>←</Text>
+</TouchableOpacity>
+
+        <CustomText style={styles.title}>Event Planen</CustomText>
       </View>
 
       <View style={styles.card}>
         {/* Gastgeber Dropdown */}
-        <Text style={styles.label}>Gastgeber:</Text>
+        <CustomText style={styles.label}>Gastgeber:</CustomText>
         <TouchableOpacity
           style={styles.dropdownButton}
           onPress={() => setShowDropdown(!showDropdown)}
         >
-          <Text style={host ? styles.dropdownText : styles.placeholderText}>
+          <CustomText style={host ? styles.dropdownText : styles.placeholderText}>
             {host
               ? members.find((m) => m.id === host)?.name || "Gastgeber auswählen"
               : "Gastgeber auswählen"}
-          </Text>
+          </CustomText>
           <AntDesign name={showDropdown ? "up" : "down"} size={18} color="black" />
         </TouchableOpacity>
 
@@ -116,7 +117,7 @@ export default function CreateEventScreen() {
                     setShowDropdown(false);
                   }}
                 >
-                  <Text>{member.name}</Text>
+                  <CustomText>{member.name}</CustomText>
                 </TouchableOpacity>
               ))}
             </View>
@@ -124,14 +125,14 @@ export default function CreateEventScreen() {
         )}
 
         {/* Datumsauswahl */}
-        <Text style={styles.label}>Datum:</Text>
+        <CustomText style={styles.label}>Datum:</CustomText>
         <TouchableOpacity
           style={styles.input}
           onPress={() => setDatePickerVisibility(true)}
         >
-          <Text style={date ? styles.dropdownText : styles.placeholderText}>
+          <CustomText style={date ? styles.dropdownText : styles.placeholderText}>
             {date || "Datum auswählen"}
-          </Text>
+          </CustomText>
         </TouchableOpacity>
 
         <DateTimePickerModal
@@ -147,14 +148,14 @@ export default function CreateEventScreen() {
         />
 
         {/* Uhrzeitauswahl */}
-        <Text style={styles.label}>Uhrzeit:</Text>
+        <CustomText style={styles.label}>Uhrzeit:</CustomText>
         <TouchableOpacity
           style={styles.input}
           onPress={() => setTimePickerVisibility(true)}
         >
-          <Text style={time ? styles.dropdownText : styles.placeholderText}>
+          <CustomText style={time ? styles.dropdownText : styles.placeholderText}>
             {time || "Uhrzeit auswählen"}
-          </Text>
+          </CustomText>
         </TouchableOpacity>
 
         <DateTimePickerModal
@@ -175,10 +176,10 @@ export default function CreateEventScreen() {
         />
 
         {/* Spiele hinzufügen */}
-        <Text style={styles.label}>Spiele:</Text>
+        <CustomText style={styles.label}>Spiele:</CustomText>
         <View style={styles.addRow}>
           <TextInput
-            style={[styles.inputFlex, { fontSize: styles.placeholderText.fontSize }]}
+            style={[styles.inputFlex, { fontFamily: "SpaceMono", fontSize: styles.placeholderText.fontSize }]}
             placeholder="Spiel hinzufügen"
             placeholderTextColor={styles.placeholderText.color}
             value={newGame}
@@ -202,10 +203,8 @@ export default function CreateEventScreen() {
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item, index }) => (
             <View style={styles.listRow}>
-              <Text style={styles.listItem}>{item}</Text>
-              <TouchableOpacity
-                onPress={() => setGames(games.filter((_, i) => i !== index))}
-              >
+              <CustomText style={styles.listItem}>{item}</CustomText>
+              <TouchableOpacity onPress={() => setGames(games.filter((_, i) => i !== index))}>
                 <AntDesign name="closecircle" size={16} color="#1C313B" />
               </TouchableOpacity>
             </View>
@@ -213,10 +212,10 @@ export default function CreateEventScreen() {
         />
 
         {/* Essen hinzufügen */}
-        <Text style={styles.label}>Essen:</Text>
+        <CustomText style={styles.label}>Essen:</CustomText>
         <View style={styles.addRow}>
           <TextInput
-            style={[styles.inputFlex, { fontSize: styles.placeholderText.fontSize }]}
+            style={[styles.inputFlex, { fontFamily: "SpaceMono", fontSize: styles.placeholderText.fontSize }]}
             placeholder="Essen hinzufügen"
             placeholderTextColor={styles.placeholderText.color}
             value={newFood}
@@ -240,10 +239,8 @@ export default function CreateEventScreen() {
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item, index }) => (
             <View style={styles.listRow}>
-              <Text style={styles.listItem}>{item}</Text>
-              <TouchableOpacity
-                onPress={() => setFood(food.filter((_, i) => i !== index))}
-              >
+              <CustomText style={styles.listItem}>{item}</CustomText>
+              <TouchableOpacity onPress={() => setFood(food.filter((_, i) => i !== index))}>
                 <AntDesign name="closecircle" size={16} color="#1C313B" />
               </TouchableOpacity>
             </View>
@@ -252,7 +249,7 @@ export default function CreateEventScreen() {
 
         {/* Event speichern */}
         <TouchableOpacity style={styles.saveButton} onPress={handleSaveEvent}>
-          <Text style={styles.saveText}>Event speichern</Text>
+          <CustomText style={styles.saveText}>Event speichern</CustomText>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -279,7 +276,7 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: 24,
-    color: "white",
+    color: "#C7E850",
   },
   title: {
     fontSize: 22,
@@ -293,12 +290,13 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 10,
     alignSelf: "center",
-    position: "relative", 
+    position: "relative",
   },
   label: {
     fontSize: 16,
     fontWeight: "bold",
     marginTop: 10,
+    fontFamily: "SpaceMono",
   },
   input: {
     width: "100%",
@@ -307,7 +305,6 @@ const styles = StyleSheet.create({
     padding: 8,
     marginTop: 5,
     marginBottom: 10,
-
   },
   inputFlex: {
     flex: 1,
@@ -316,7 +313,6 @@ const styles = StyleSheet.create({
     padding: 8,
     marginTop: 5,
     marginBottom: 10,
-
   },
   dropdownButton: {
     flexDirection: "row",
@@ -329,21 +325,26 @@ const styles = StyleSheet.create({
   },
   dropdownText: {
     fontSize: 16,
-
+    fontFamily: "SpaceMono",
+  },
+  placeholderText: {
+    fontSize: 16,
+    color: "#A9A9A9",
+    fontFamily: "SpaceMono",
   },
   dropdownListContainer: {
     position: "absolute",
-    top: 50, 
+    top: 50,
     left: 0,
     right: 0,
-    zIndex: 100, 
+    zIndex: 100,
   },
   dropdownList: {
     backgroundColor: "white",
     borderRadius: 5,
     padding: 10,
-    elevation: 5, 
-    shadowColor: "#000", 
+    elevation: 5,
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -361,10 +362,23 @@ const styles = StyleSheet.create({
     padding: 9,
     marginLeft: 10,
     marginBottom: 5,
+    // Schatten für den Button
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  listRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginVertical: 3,
+    paddingHorizontal: 10,
   },
   listItem: {
     fontSize: 16,
-    marginVertical: 5,
+    fontFamily: "SpaceMono",
   },
   saveButton: {
     backgroundColor: "#C7E85D",
@@ -373,14 +387,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
     marginTop: 20,
+    // Schatten für den Save-Button
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 3,
   },
   saveText: {
     fontSize: 16,
     fontWeight: "bold",
+    fontFamily: "SpaceMono",
   },
-  placeholderText: {
-    fontSize: 16,
-    color: "#A9A9A9", 
-  },
-  listRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginVertical: 3 , paddingHorizontal: 10, },
 });

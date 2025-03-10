@@ -1,14 +1,15 @@
 import React, { useEffect } from "react";
-import { View, FlatList, StyleSheet, Text, TouchableOpacity, SafeAreaView } from "react-native";
+import { View, FlatList, StyleSheet, TouchableOpacity, SafeAreaView } from "react-native";
 import { useGroupStore } from "../stores/groupStore";
 import { useEventStore } from "../stores/eventStore";
 import GroupTile from "../components/GroupTile";
 import { Ionicons } from "@expo/vector-icons";
+import CustomText from "../components/CustomText";
 
 export default function HomeScreen({ navigation }: { navigation: any }) {
   const groups = useGroupStore((state) => state.groups);
   const loadGroups = useGroupStore((state) => state.loadGroups);
-  const { events, loadGroupEvents: loadEventsByGroup } = useEventStore();
+  const { events, loadGroupEvents } = useEventStore();
 
   useEffect(() => {
     loadGroups();
@@ -16,13 +17,13 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
 
   useEffect(() => {
     groups.forEach((group) => {
-      if (group.id) loadEventsByGroup(group.id);
+      if (group.id) loadGroupEvents(group.id);
     });
   }, [groups]);
 
   /*
    Holt das nächste geplante Event einer Gruppe.
-   */
+  */
   const getNextEventForGroup = (groupId: string) => {
     const groupEvents = events
       .filter(event => event.groupId === groupId)
@@ -37,7 +38,7 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
         return { ...event, eventDateTime };
       })
       .filter(event => event.eventDateTime >= new Date()) // Vergangene Events ignorieren
-      .sort((a, b) => a.eventDateTime.getTime() - b.eventDateTime.getTime()); // Nach Datum aufsteigend sortieren
+      .sort((a, b) => a.eventDateTime.getTime() - b.eventDateTime.getTime());
   
     return groupEvents.length > 0 ? groupEvents[0] : null;
   };
@@ -45,12 +46,14 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuButton}>
-          <Ionicons name="menu" size={28} color="white" />
+        <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuButton}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
+          <Ionicons name="menu" size={28} color="#C7E850" />
         </TouchableOpacity>
-        <Text style={styles.title}>Gruppenübersicht</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("CreateGroup")} style={styles.plusButton}>
-          <Ionicons name="add-circle-outline" size={28} color="white" />
+        <CustomText style={styles.title}>Gruppenübersicht</CustomText>
+        <TouchableOpacity onPress={() => navigation.navigate("CreateGroup")} style={styles.plusButton}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
+          <Ionicons name="add-circle-outline" size={28} color="#C7E850" />
         </TouchableOpacity>
       </View>
 
@@ -73,7 +76,7 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
         />
       ) : (
         <View style={styles.noGroupsContainer}>
-          <Text style={styles.noGroupsText}>Noch keine Gruppe erstellt oder beigetreten</Text>
+          <CustomText style={styles.noGroupsText}>Noch keine Gruppe erstellt oder beigetreten</CustomText>
         </View>
       )}
     </SafeAreaView>
