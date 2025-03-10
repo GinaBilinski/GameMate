@@ -44,8 +44,8 @@ export default function EventDetailsScreen() {
           setGames(formatItems(eventData.games || []));
           setFood(formatItems(eventData.food || []));
           // Prüfen, ob der Benutzer bereits für eine Kategorie gewählt hat
-          setUserVotedGame(eventData.games.some((item) => item.votedBy.includes(userId)));
-          setUserVotedFood(eventData.food.some((item) => item.votedBy.includes(userId)));
+          setUserVotedGame(eventData.games.some((item) => item.votedBy?.includes(userId)));
+          setUserVotedFood(eventData.food.some((item) => item.votedBy?.includes(userId)));
         }
       } catch (error) {
         console.error("Fehler beim Laden der Event-Daten:", error);

@@ -63,7 +63,7 @@ export default function CreateEventScreen() {
   */
   const handleSaveEvent = async () => {
     if (!host) return;
-    const eventData = {host, date, time, games, food, groupId,};
+    const eventData = { host, date, time, games, food, groupId, completed: false };
     await addEvent(eventData);
     navigation.goBack();
   };
