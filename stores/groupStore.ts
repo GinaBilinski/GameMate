@@ -19,6 +19,7 @@ type Group = {
   name: string;
   memberIds: string[];
   eventIds?: string[]; 
+  usedHosts?: string[]
 };
 
 /*
@@ -34,6 +35,7 @@ type GroupStore = {
   getGroupMembers: (groupId: string) => Promise<string[]>;
   addMember: (userId: string, groupId: string) => Promise<void>;
   removeMember: (userId: string, groupId: string) => Promise<void>;
+  updateUsedHosts: (groupId: string, newUsedHosts: string[]) => Promise<void>; // <--- hinzufügen
 };
 
 /*
@@ -199,4 +201,27 @@ export const useGroupStore = create<GroupStore>((set) => ({
         console.error("groupStore/removeMember => Error removing member:", error);
       }
     },
+    
+  /*
+  Aktualisiert die Gastgeber-Rotationsliste (usedHosts) für eine Gruppe.
+  Damit wird sichergestellt, dass die Reihenfolge der Gastgeber im UI korrekt wiedergegeben wird.
+  */
+  updateUsedHosts: async (groupId: string, newUsedHosts: string[]) => {
+    try {
+      // Firestore aktualisieren
+      await updateDoc(doc(db, "groups", groupId), { usedHosts: newUsedHosts });
+      
+      // Zustand im Store anpassen
+      set((state) => ({
+        groups: state.groups.map((g) =>
+          g.id === groupId
+            ? { ...g, usedHosts: newUsedHosts }
+            : g
+        ),
+      }));
+    } catch (error) {
+      console.error("groupStore => Error updating usedHosts:", error);
+    }
+  },
+
 }));

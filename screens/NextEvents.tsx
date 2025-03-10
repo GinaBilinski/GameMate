@@ -3,6 +3,7 @@ import { View, SafeAreaView, Text, StyleSheet, TouchableOpacity } from "react-na
 import { useNavigation, useRoute, NavigationProp, useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/Navigation";
 import { Event, useEventStore } from "../stores/eventStore";
+import { parse, compareAsc } from 'date-fns';
 
 
 export default function NextEventsScreen() {
@@ -23,8 +24,12 @@ export default function NextEventsScreen() {
   useEffect(() => {
     const filteredEvents: Event[] = events
       .filter((event) => event.groupId === groupId && !event.completed)
-      .sort((a, b) => new Date(`${a.date}T${a.time}:00`).getTime() - new Date(`${b.date}T${b.time}:00`).getTime());
-
+      .sort((a, b) => {
+        const dateA = parse(`${a.date} ${a.time}`, 'dd.MM.yyyy HH:mm', new Date());
+        const dateB = parse(`${b.date} ${b.time}`, 'dd.MM.yyyy HH:mm', new Date());
+        return compareAsc(dateA, dateB);
+      });
+  
     setNextEvents(filteredEvents);
   }, [events]);
 

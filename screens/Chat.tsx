@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, FlatList, Keyboard, Platform } from "react-native";
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  StyleSheet, 
+  TouchableOpacity, 
+  FlatList, 
+  Keyboard, 
+  Platform 
+} from "react-native";
 import { NavigationProp, useNavigation, useRoute } from "@react-navigation/native";
 import { AntDesign } from "@expo/vector-icons";
 import { db } from "../services/firebaseConfig";
@@ -15,15 +24,21 @@ export default function ChatScreen() {
   const { groupId } = route.params as { groupId: string };
   const currentUser = useAuthStore((state) => state.user);
   const group = useGroupStore((state) => state.groups.find((g) => g.id === groupId));
-  const [messages, setMessages] = useState<{ id: string; senderId: string; text: string; timestamp: number }[]>([]);
+  
+  // Nachrichten, Eingabetext und Keyboard-Höhe
+  const [messages, setMessages] = useState<
+    { id: string; senderId: string; text: string; timestamp: number }[]
+  >([]);
   const [newMessage, setNewMessage] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  
+  // Referenz auf FlatList
   const flatListRef = useRef<FlatList>(null);
-
-  // Speichert Benutzer-IDs und ihre Namen für schnellen Zugriff
+  
+  // userMap: Schneller Zugriff auf Benutzernamen anhand ihrer IDs
   const [userMap, setUserMap] = useState<Record<string, string>>({});
 
-  // Holt die Mitglieder der Gruppe und speichert sie als `userMap`
+  // Mitglieder der Gruppe laden und in userMap speichern
   useEffect(() => {
     const fetchMembers = async () => {
       try {
@@ -34,14 +49,12 @@ export default function ChatScreen() {
             return user ? { id, name: user.name } : null;
           })
         );
-        // Mit map direkt Namen des Absenders
         const userMapping = memberDetails
           .filter((member) => member !== null)
           .reduce((acc, member) => {
             acc[member!.id] = member!.name;
             return acc;
           }, {} as Record<string, string>);
-        // Nimmt Wert aus Map 
         setUserMap(userMapping);
       } catch (error) {
         console.error("Fehler beim Laden der Mitglieder:", error);
@@ -51,7 +64,7 @@ export default function ChatScreen() {
     fetchMembers();
   }, [groupId]);
 
-  // Holt die Nachrichten aus Firestore
+  // Nachrichten aus Firestore laden (aufsteigend nach timestamp)
   useEffect(() => {
     const chatRef = collection(db, `groups/${groupId}/chats`);
     const q = query(chatRef, orderBy("timestamp", "asc"));
@@ -61,23 +74,17 @@ export default function ChatScreen() {
         ...doc.data(),
       })) as any;
       setMessages(loadedMessages);
-  
-      // Direkt zum neuesten Eintrag scrollen
-      setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated: false });
-      }, 100);
     });
     return () => unsubscribe();
   }, [groupId]);
-  
 
-  // Überwacht die Tastatur, um das Eingabefeld nach oben zu schieben
+  // Tastatur-Listener: Beim Öffnen der Tastatur wird die Höhe angepasst, 
+  // sodass der Eingabebereich nicht verdeckt wird.
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
       Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
       (event) => {
         setKeyboardHeight(event.endCoordinates.height);
-        scrollToBottom();
       }
     );
     const keyboardDidHideListener = Keyboard.addListener(
@@ -92,7 +99,7 @@ export default function ChatScreen() {
     };
   }, []);
 
-  // Speichert eine neue Nachricht in Firestore
+  // Beim Senden einer Nachricht: Nachricht in Firestore speichern
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !currentUser) return;
     await addDoc(collection(db, `groups/${groupId}/chats`), {
@@ -101,30 +108,25 @@ export default function ChatScreen() {
       timestamp: Date.now(),
     });
     setNewMessage("");
-    scrollToBottom();
   };
 
-  // Wandelt den Zeitstempel (Timestamp) in ein lesbares Datumsformat um
+  // Formatiert den Timestamp in lesbares Datum und Uhrzeit
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
     return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
   };
 
-  // Scrollt zum Ende der Nachrichtenliste
-  const scrollToBottom = () => {
-    if (flatListRef.current && messages.length > 0) {
-      flatListRef.current.scrollToEnd({ animated: false });
-    }
-  };
-
-  // Holt den Namen des Absenders aus `userMap`
+  // Liefert den Namen des Absenders aus userMap
   const getSenderName = (senderId: string) => {
     return userMap[senderId] || "Unbekannt";
   };
 
+  // Erzeuge eine umgekehrte Kopie des Nachrichtenarrays
+  const reversedMessages = [...messages].reverse();
+
   return (
     <View style={styles.container}>
-      {/* Header bleibt fixiert */}
+      {/* Fixierter Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backText}>←</Text>
@@ -132,33 +134,36 @@ export default function ChatScreen() {
         <CustomText style={styles.title}>{group?.name || "Chat"}</CustomText>
       </View>
 
-      {/* Nachrichtenliste */}
+      {/* FlatList mit inverted und umgekehrten Daten */}
       <FlatList
-  ref={flatListRef}
-  data={messages}
-  keyExtractor={(item) => item.id}
-  renderItem={({ item, index }) => {
-    const isSameSender = index > 0 && messages[index - 1].senderId === item.senderId;
-    const showSenderName = !isSameSender && item.senderId !== currentUser?.uid;
-
-    return (
-      <View style={[styles.messageContainer, item.senderId === currentUser?.uid ? styles.sentMessage : styles.receivedMessage]}>
-        {showSenderName && (
-          <CustomText style={styles.senderName}>{getSenderName(item.senderId)}</CustomText>
-        )}
-        <CustomText style={styles.messageText}>{item.text}</CustomText>
-        <CustomText style={styles.timestamp}>{formatDate(item.timestamp)}</CustomText>
-      </View>
-    );
-  }}
-  contentContainerStyle={styles.flatListContent}
-  keyboardShouldPersistTaps="handled"
-  style={styles.messageList}
-  initialNumToRender={messages.length} // Stellt sicher, dass alle Nachrichten gerendert werden
-  onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
-  onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
-/>
-
+        ref={flatListRef}
+        data={reversedMessages}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item, index }) => {
+          // Da wir reversedMessages nutzen, entspricht index 0 dem neuesten Eintrag.
+          // Um den Namen nur einmal pro Absender anzuzeigen, vergleichen wir mit dem nächsten Element.
+          const isSameSender = index < reversedMessages.length - 1 && reversedMessages[index + 1].senderId === item.senderId;
+          const showSenderName = !isSameSender && item.senderId !== currentUser?.uid;
+          return (
+            <View
+              style={[
+                styles.messageContainer,
+                item.senderId === currentUser?.uid ? styles.sentMessage : styles.receivedMessage,
+              ]}
+            >
+              {showSenderName && (
+                <CustomText style={styles.senderName}>{getSenderName(item.senderId)}</CustomText>
+              )}
+              <CustomText style={styles.messageText}>{item.text}</CustomText>
+              <CustomText style={styles.timestamp}>{formatDate(item.timestamp)}</CustomText>
+            </View>
+          );
+        }}
+        inverted
+        contentContainerStyle={styles.flatListContent}
+        keyboardShouldPersistTaps="handled"
+        style={styles.messageList}
+      />
 
       {/* Eingabefeld */}
       <View style={[styles.inputContainer, { marginBottom: keyboardHeight }]}>
@@ -176,6 +181,7 @@ export default function ChatScreen() {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: { 
