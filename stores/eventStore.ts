@@ -25,8 +25,8 @@ export type Event = {
   host: string;
   date: string;
   time: string;
-  games: string[];
-  food: string[];
+  games: string[]; 
+  food: string[]; 
   groupId: string;
   completed: boolean;
   hostRatings?: number[];
@@ -35,6 +35,30 @@ export type Event = {
   ratedUsers?: string[];
 };
 
+/*
+ Definiert Eintrag für Spiele, Essen und Anzahl der Stimmnen.
+ - gina
+*/
+export type EventItem = {
+  name: string;
+  votes: number;
+  votedBy: string[];
+};
+
+/*
+ Um Events mit zusätzlichen Details zu verwalten
+ - gina
+*/
+export type EventDetails = {
+  id?: string;
+  host: string;
+  date: string;
+  time: string;
+  games: EventItem[];
+  food: EventItem[];
+  groupId: string;
+  completed: boolean;
+};
 
 /*
  defining the zustand store
@@ -43,22 +67,34 @@ export type Event = {
 */
 type EventStore = {
   events: Event[];
+  currentEvent?: EventDetails;
   addEvent: (event: Event) => Promise<void>;
   loadGroupEvents: (groupId: string) => Promise<void>;
   removeEvent: (eventId: string, groupId: string) => Promise<void>;
   markEventsAsCompleted: () => Promise<void>;
-  submitRating: (eventId: string, groupId: string, hostRating: number, foodRating: number, overallRating: number) => Promise<void>;
+  submitRating: (
+    eventId: string,
+    groupId: string,
+    hostRating: number,
+    foodRating: number,
+    overallRating: number
+  ) => Promise<void>;
   isRatedUser: (eventId: string, groupId: string) => Promise<boolean>;
+  loadEventDetails: (groupId: string, eventId: string) => Promise<void>;
+  addGame: (groupId: string, eventId: string, newGame: string) => Promise<void>;
+  addFood: (groupId: string, eventId: string, newFood: string) => Promise<void>;
+  vote: (groupId: string, eventId: string, category: "games" | "food", index: number) => Promise<void>;
 };
 
 /*
-creating the zustand store
-zustand updates state and keeps data in sync
-- nico
+ creating the zustand store
+ zustand updates state and keeps data in sync
+ - nico
 */
-export const useEventStore = create<EventStore>((set) => ({
+export const useEventStore = create<EventStore>((set, get) => ({
   events: [],
-  
+  currentEvent: undefined,
+
   isRatedUser: async (eventId: string, groupId: string) => {
     try {
       const authId = useAuthStore.getState().user?.uid;
@@ -77,8 +113,7 @@ export const useEventStore = create<EventStore>((set) => ({
         return true;
       }
       return false;
-    } 
-    catch (error) {
+    } catch (error) {
       console.error("eventStore => Error checking rated user:", error);
       return true;
     }
@@ -88,7 +123,13 @@ export const useEventStore = create<EventStore>((set) => ({
   Function to submit ratings for an event
   - nico
   */
-  submitRating: async (eventId: string, groupId: string, hostRating: number, foodRating: number, overallRating: number) => {
+  submitRating: async (
+    eventId: string,
+    groupId: string,
+    hostRating: number,
+    foodRating: number,
+    overallRating: number
+  ) => {
     try {
       const authId = useAuthStore.getState().user?.uid;
       if (!authId) {
@@ -188,16 +229,16 @@ export const useEventStore = create<EventStore>((set) => ({
    load all events for a specific group from Firestore
    - nico
   */
-  loadGroupEvents: async (groupId) => {
+  loadGroupEvents: async (groupId: string) => {
     try {
-      await useEventStore.getState().markEventsAsCompleted();
+      await get().markEventsAsCompleted();
 
       const eventsSnapshot = await getDocs(collection(db, `groups/${groupId}/events`));
       const groupEvents = await Promise.all(
         eventsSnapshot.docs.map(async (doc) => {
           const eventData = doc.data() as Event;
           const hostData = await useUserStore.getState().getUser(eventData.host);
-          if(!hostData){
+          if (!hostData) {
             console.error("eventStore: Error loading host:");
           }
           const hostName = hostData ? hostData.name : "Unknown";
@@ -211,15 +252,16 @@ export const useEventStore = create<EventStore>((set) => ({
       console.error("Fehler beim Laden der Gruppen-Events:", error);
     }
   },
+
   /*
   add a new event to Firestore and update state
   - nico
  */
-  addEvent: async (event) => {
+  addEvent: async (event: Event) => {
     try {
       const docRef = await addDoc(collection(db, `groups/${event.groupId}/events`), event);
       const hostData = await useUserStore.getState().getUser(event.host);
-      if(!hostData){
+      if (!hostData) {
         console.error("eventStore: Error loading host:");
       }
       const hostName = hostData ? hostData.name : "Unknown";
@@ -235,7 +277,7 @@ export const useEventStore = create<EventStore>((set) => ({
   remove an event from Firestore and update state
   - nico
   */
-  removeEvent: async (eventId, groupId) => {
+  removeEvent: async (eventId: string, groupId: string) => {
     try {
       await deleteDoc(doc(db, `groups/${groupId}/events`, eventId));
       set((state) => ({
@@ -245,10 +287,126 @@ export const useEventStore = create<EventStore>((set) => ({
       console.error("Fehler beim Löschen des Events:", error);
     }
   },
+
+  /*
+  Lade die Event-Details für den EventDetailsScreen - wandelt die Spiele- und Essensdaten
+  in Objekte um, um Abstimmungsinformationen einzubinden.
+  - gina
+  */
+  loadEventDetails: async (groupId: string, eventId: string) => {
+    try {
+      const eventRef = doc(db, `groups/${groupId}/events`, eventId);
+      const eventSnap = await getDoc(eventRef);
+      if (eventSnap.exists()) {
+        const eventData = eventSnap.data();
+        const transformItems = (items: any): EventItem[] =>
+          items.map((item: any) =>
+            typeof item === "string"
+              ? { name: item, votes: 0, votedBy: [] }
+              : item
+          );
+        const currentEvent: EventDetails = {
+          id: eventSnap.id,
+          host: eventData.host,
+          date: eventData.date,
+          time: eventData.time,
+          groupId: eventData.groupId,
+          completed: eventData.completed,
+          games: transformItems(eventData.games || []),
+          food: transformItems(eventData.food || []),
+        };
+        set({ currentEvent });
+      }
+    } catch (error) {
+      console.error("Error loading event details:", error);
+    }
+  },
+
+  /*
+  Fügt ein neues Spiel zum Event hinzu - aktualisiert Firestore und den lokalen Zustand.
+  - gina
+  */
+  addGame: async (groupId: string, eventId: string, newGame: string) => {
+    if (!newGame) return;
+    const { currentEvent } = get();
+    if (!currentEvent) return;
+    const updatedGames = [
+      ...currentEvent.games,
+      { name: newGame, votes: 0, votedBy: [] },
+    ];
+    try {
+      await updateDoc(doc(db, `groups/${groupId}/events`, eventId), { games: updatedGames });
+      set((state) => ({
+        currentEvent: state.currentEvent ? { ...state.currentEvent, games: updatedGames } : state.currentEvent,
+      }));
+    } catch (error) {
+      console.error("Error adding game:", error);
+    }
+  },
+
+  /*
+  Fügt ein neues Essen zum Event hinzu - aktualisiert Firestore und den lokalen Zustand.
+  - gina
+  */
+  addFood: async (groupId: string, eventId: string, newFood: string) => {
+    if (!newFood) return;
+    const { currentEvent } = get();
+    if (!currentEvent) return;
+    const updatedFood = [
+      ...currentEvent.food,
+      { name: newFood, votes: 0, votedBy: [] },
+    ];
+    try {
+      await updateDoc(doc(db, `groups/${groupId}/events`, eventId), { food: updatedFood });
+      set((state) => ({
+        currentEvent: state.currentEvent ? { ...state.currentEvent, food: updatedFood } : state.currentEvent,
+      }));
+    } catch (error) {
+      console.error("Error adding food:", error);
+    }
+  },
+
+  /*
+  Abstimmungsfunktion für Spiele oder Essen.
+  - prüft, ob  Nutzer in jeweiligen Kategorie bereits abgestimmt hat,
+  erhöht  Stimmenzähler, fügt  Nutzer-ID zur Liste der Abstimmenden hinzu und aktualisiert Firestore.
+  - gina
+  */
+  vote: async (groupId: string, eventId: string, category: "games" | "food", index: number) => {
+    const currentUser = useAuthStore.getState().user;
+    if (!currentUser) {
+      alert("Du musst angemeldet sein, um abzustimmen!");
+      return;
+    }
+    const { currentEvent } = get();
+    if (!currentEvent) return;
+    const userId = currentUser.uid;
+    const items = category === "games" ? currentEvent.games : currentEvent.food;
+    const hasVoted = items.some((item) => item.votedBy.includes(userId));
+    if (hasVoted) {
+      alert(`Du hast bereits für ${category === "games" ? "Spiele" : "Essen"} abgestimmt!`);
+      return;
+    }
+    const updatedItems = [...items];
+    updatedItems[index].votes += 1;
+    updatedItems[index].votedBy.push(userId);
+    try {
+      await updateDoc(doc(db, `groups/${groupId}/events`, eventId), { [category]: updatedItems });
+      set((state) => ({
+        currentEvent: state.currentEvent ? { ...state.currentEvent, [category]: updatedItems } : state.currentEvent,
+      }));
+    } catch (error) {
+      console.error("Error voting:", error);
+    }
+  },
 }));
 
+/*
+  Berechnet den durchschnittlichen Bewertungswert aus einem Array von Bewertungen.
+  Gibt 0 zurück, falls keine Bewertungen vorhanden sind.
+*/
 export const calculateAverageRating = (ratings?: number[]): number => {
   if (!ratings || ratings.length === 0) return 0;
   const sum = ratings.reduce((acc, rating) => acc + rating, 0);
   return parseFloat((sum / ratings.length).toFixed(1));
-}
+};

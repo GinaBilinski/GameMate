@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, SafeAreaView, Text, TextInput, TouchableOpacity, StyleSheet, FlatList } from "react-native";
+import {View, SafeAreaView, Text,TextInput, TouchableOpacity, StyleSheet,} from "react-native";
 import { NavigationProp, useNavigation, useRoute } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/Navigation";
 import { useEventStore } from "../stores/eventStore";
@@ -9,6 +9,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../services/firebaseConfig";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import CustomText from "../components/CustomText";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 export default function CreateEventScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -55,7 +56,7 @@ export default function CreateEventScreen() {
   /*
     Gastgeber Rotation: überprüft, welche Gruppenmitglieder bereits als Gastgeber fungiert haben.
     Falls alle Mitglieder einmal Gastgeber waren, wird die Rotation zurückgesetzt 
-    (das Array usedHosts wird geleert).
+    (Array usedHosts wird geleert).
   */
   const currentUsedHosts = group?.usedHosts || [];
   const availableMembers = members.filter(
@@ -82,176 +83,191 @@ export default function CreateEventScreen() {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}
-  hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
-  <Text style={styles.backText}>←</Text>
-</TouchableOpacity>
-
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+        >
+          <Text style={styles.backText}>←</Text>
+        </TouchableOpacity>
         <CustomText style={styles.title}>Event Planen</CustomText>
       </View>
 
-      <View style={styles.card}>
-        {/* Gastgeber Dropdown */}
-        <CustomText style={styles.label}>Gastgeber:</CustomText>
-        <TouchableOpacity
-          style={styles.dropdownButton}
-          onPress={() => setShowDropdown(!showDropdown)}
-        >
-          <CustomText style={host ? styles.dropdownText : styles.placeholderText}>
-            {host
-              ? members.find((m) => m.id === host)?.name || "Gastgeber auswählen"
-              : "Gastgeber auswählen"}
-          </CustomText>
-          <AntDesign name={showDropdown ? "up" : "down"} size={18} color="black" />
-        </TouchableOpacity>
+      {/* Scrollbarer Bereich für den restlichen Inhalt */}
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.scrollContent}
+        extraHeight={100}
+        enableOnAndroid={true}
+      >
+        <View style={styles.card}>
+          {/* Gastgeber Dropdown */}
+          <CustomText style={styles.label}>Gastgeber:</CustomText>
+          <TouchableOpacity
+            style={styles.dropdownButton}
+            onPress={() => setShowDropdown(!showDropdown)}
+          >
+            <CustomText style={host ? styles.dropdownText : styles.placeholderText}>
+              {host
+                ? members.find((m) => m.id === host)?.name || "Gastgeber auswählen"
+                : "Gastgeber auswählen"}
+            </CustomText>
+            <AntDesign name={showDropdown ? "up" : "down"} size={18} color="black" />
+          </TouchableOpacity>
 
-        {showDropdown && (
-          <View style={styles.dropdownListContainer}>
-            <View style={styles.dropdownList}>
-              {membersForDropdown.map((member) => (
-                <TouchableOpacity
-                  key={member.id}
-                  style={styles.dropdownItem}
-                  onPress={() => {
-                    setHost(member.id);
-                    setShowDropdown(false);
-                  }}
-                >
-                  <CustomText>{member.name}</CustomText>
-                </TouchableOpacity>
-              ))}
+          {showDropdown && (
+            <View style={styles.dropdownListContainer}>
+              <View style={styles.dropdownList}>
+                {membersForDropdown.map((member) => (
+                  <TouchableOpacity
+                    key={member.id}
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      setHost(member.id);
+                      setShowDropdown(false);
+                    }}
+                  >
+                    <CustomText>{member.name}</CustomText>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
+          )}
+
+          {/* Datumsauswahl */}
+          <CustomText style={styles.label}>Datum:</CustomText>
+          <TouchableOpacity style={styles.input} onPress={() => setDatePickerVisibility(true)}>
+            <CustomText style={date ? styles.dropdownText : styles.placeholderText}>
+              {date || "Datum auswählen"}
+            </CustomText>
+          </TouchableOpacity>
+          <DateTimePickerModal
+            isVisible={isDatePickerVisible}
+            mode="date"
+            display="inline"
+            themeVariant="light"
+            locale="de"  
+            cancelTextIOS="Abbrechen"
+            confirmTextIOS="Bestätigen"
+            onConfirm={(selectedDate) => {
+              setDate(selectedDate.toLocaleDateString("de-DE"));
+              setDatePickerVisibility(false);
+            }}
+            onCancel={() => setDatePickerVisibility(false)}
+          />
+
+          {/* Uhrzeitauswahl */}
+          <CustomText style={styles.label}>Uhrzeit:</CustomText>
+          <TouchableOpacity style={styles.input} onPress={() => setTimePickerVisibility(true)}>
+            <CustomText style={time ? styles.dropdownText : styles.placeholderText}>
+              {time || "Uhrzeit auswählen"}
+            </CustomText>
+          </TouchableOpacity>
+          <DateTimePickerModal
+            isVisible={isTimePickerVisible}
+            mode="time"
+            themeVariant="light"
+            is24Hour
+            locale="de"
+            cancelTextIOS="Abbrechen"
+            confirmTextIOS="Bestätigen"
+            onConfirm={(selectedTime: Date) => {
+              setTime(
+                selectedTime.toLocaleTimeString("de-DE", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              );
+              setTimePickerVisibility(false);
+            }}
+            onCancel={() => setTimePickerVisibility(false)}
+          />
+
+          {/* Spiele hinzufügen */}
+          <CustomText style={styles.label}>Spiele:</CustomText>
+          <View style={styles.addRow}>
+            <TextInput
+              style={[
+                styles.inputFlex,
+                { flex: 1, marginRight: 10, fontFamily: "SpaceMono", fontSize: styles.placeholderText.fontSize },
+              ]}
+              placeholder="Spiel hinzufügen"
+              placeholderTextColor={styles.placeholderText.color}
+              value={newGame}
+              onChangeText={setNewGame}
+              autoCorrect={true}
+              autoCapitalize="sentences"
+              keyboardType="default"
+              textContentType="none"
+            />
+            <TouchableOpacity
+              onPress={() => {
+                if (newGame) {
+                  setGames([...games, newGame]);
+                  setNewGame("");
+                }
+              }}
+              style={styles.addButton}
+            >
+              <AntDesign name="plus" size={16} color="white" />
+            </TouchableOpacity>
           </View>
-        )}
+          <View>
+            {games.map((item, index) => (
+              <View key={index} style={styles.listRow}>
+                <CustomText style={styles.listItem}>{item}</CustomText>
+                <TouchableOpacity onPress={() => setGames(games.filter((_, i) => i !== index))}>
+                  <AntDesign name="closecircle" size={16} color="#1C313B" />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
 
-        {/* Datumsauswahl */}
-        <CustomText style={styles.label}>Datum:</CustomText>
-        <TouchableOpacity
-          style={styles.input}
-          onPress={() => setDatePickerVisibility(true)}
-        >
-          <CustomText style={date ? styles.dropdownText : styles.placeholderText}>
-            {date || "Datum auswählen"}
-          </CustomText>
-        </TouchableOpacity>
+          {/* Essen hinzufügen */}
+          <CustomText style={styles.label}>Essen:</CustomText>
+          <View style={styles.addRow}>
+            <TextInput
+              style={[
+                styles.inputFlex,
+                { flex: 1, marginRight: 10, fontFamily: "SpaceMono", fontSize: styles.placeholderText.fontSize },
+              ]}
+              placeholder="Essen hinzufügen"
+              placeholderTextColor={styles.placeholderText.color}
+              value={newFood}
+              onChangeText={setNewFood}
+              autoCorrect={true}
+              autoCapitalize="sentences"
+              keyboardType="default"
+              textContentType="none"
+            />
+            <TouchableOpacity
+              onPress={() => {
+                if (newFood) {
+                  setFood([...food, newFood]);
+                  setNewFood("");
+                }
+              }}
+              style={styles.addButton}
+            >
+              <AntDesign name="plus" size={16} color="white" />
+            </TouchableOpacity>
+          </View>
+          <View>
+            {food.map((item, index) => (
+              <View key={index} style={styles.listRow}>
+                <CustomText style={styles.listItem}>{item}</CustomText>
+                <TouchableOpacity onPress={() => setFood(food.filter((_, i) => i !== index))}>
+                  <AntDesign name="closecircle" size={16} color="#1C313B" />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
 
-        <DateTimePickerModal
-          isVisible={isDatePickerVisible}
-          mode="date"
-          display="inline"
-          themeVariant="light"
-          onConfirm={(selectedDate) => {
-            setDate(selectedDate.toLocaleDateString());
-            setDatePickerVisibility(false);
-          }}
-          onCancel={() => setDatePickerVisibility(false)}
-        />
-
-        {/* Uhrzeitauswahl */}
-        <CustomText style={styles.label}>Uhrzeit:</CustomText>
-        <TouchableOpacity
-          style={styles.input}
-          onPress={() => setTimePickerVisibility(true)}
-        >
-          <CustomText style={time ? styles.dropdownText : styles.placeholderText}>
-            {time || "Uhrzeit auswählen"}
-          </CustomText>
-        </TouchableOpacity>
-
-        <DateTimePickerModal
-          isVisible={isTimePickerVisible}
-          mode="time"
-          themeVariant="light"
-          is24Hour
-          onConfirm={(selectedTime: Date) => {
-            setTime(
-              selectedTime.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            );
-            setTimePickerVisibility(false);
-          }}
-          onCancel={() => setTimePickerVisibility(false)}
-        />
-
-        {/* Spiele hinzufügen */}
-        <CustomText style={styles.label}>Spiele:</CustomText>
-        <View style={styles.addRow}>
-          <TextInput
-            style={[styles.inputFlex, { fontFamily: "SpaceMono", fontSize: styles.placeholderText.fontSize }]}
-            placeholder="Spiel hinzufügen"
-            placeholderTextColor={styles.placeholderText.color}
-            value={newGame}
-            onChangeText={setNewGame}
-          />
-          <TouchableOpacity
-            onPress={() => {
-              if (newGame) {
-                setGames([...games, newGame]);
-                setNewGame("");
-              }
-            }}
-            style={styles.addButton}
-          >
-            <AntDesign name="plus" size={16} color="white" />
+          {/* Event speichern */}
+          <TouchableOpacity style={styles.saveButton} onPress={handleSaveEvent}>
+            <CustomText style={styles.saveText}>Event speichern</CustomText>
           </TouchableOpacity>
         </View>
-
-        <FlatList
-          data={games}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item, index }) => (
-            <View style={styles.listRow}>
-              <CustomText style={styles.listItem}>{item}</CustomText>
-              <TouchableOpacity onPress={() => setGames(games.filter((_, i) => i !== index))}>
-                <AntDesign name="closecircle" size={16} color="#1C313B" />
-              </TouchableOpacity>
-            </View>
-          )}
-        />
-
-        {/* Essen hinzufügen */}
-        <CustomText style={styles.label}>Essen:</CustomText>
-        <View style={styles.addRow}>
-          <TextInput
-            style={[styles.inputFlex, { fontFamily: "SpaceMono", fontSize: styles.placeholderText.fontSize }]}
-            placeholder="Essen hinzufügen"
-            placeholderTextColor={styles.placeholderText.color}
-            value={newFood}
-            onChangeText={setNewFood}
-          />
-          <TouchableOpacity
-            onPress={() => {
-              if (newFood) {
-                setFood([...food, newFood]);
-                setNewFood("");
-              }
-            }}
-            style={styles.addButton}
-          >
-            <AntDesign name="plus" size={16} color="white" />
-          </TouchableOpacity>
-        </View>
-
-        <FlatList
-          data={food}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item, index }) => (
-            <View style={styles.listRow}>
-              <CustomText style={styles.listItem}>{item}</CustomText>
-              <TouchableOpacity onPress={() => setFood(food.filter((_, i) => i !== index))}>
-                <AntDesign name="closecircle" size={16} color="#1C313B" />
-              </TouchableOpacity>
-            </View>
-          )}
-        />
-
-        {/* Event speichern */}
-        <TouchableOpacity style={styles.saveButton} onPress={handleSaveEvent}>
-          <CustomText style={styles.saveText}>Event speichern</CustomText>
-        </TouchableOpacity>
-      </View>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 }
@@ -276,21 +292,12 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: 24,
-    color: "#C7E850",
+    color: "#C7E85D",
   },
   title: {
     fontSize: 22,
     fontWeight: "bold",
     color: "white",
-  },
-  card: {
-    width: "95%",
-    backgroundColor: "#E5E5E5",
-    borderRadius: 10,
-    padding: 20,
-    marginBottom: 10,
-    alignSelf: "center",
-    position: "relative",
   },
   label: {
     fontSize: 16,
@@ -306,8 +313,16 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginBottom: 10,
   },
+  card: {
+    width: "99%",
+    backgroundColor: "#E5E5E5",
+    borderRadius: 10,
+    padding: 20,
+    marginBottom: 10,
+    alignSelf: "center",
+    position: "relative",
+  },
   inputFlex: {
-    flex: 1,
     backgroundColor: "white",
     borderRadius: 5,
     padding: 8,
@@ -334,12 +349,14 @@ const styles = StyleSheet.create({
   },
   dropdownListContainer: {
     position: "absolute",
-    top: 50,
+    top: 95,
     left: 0,
     right: 0,
     zIndex: 100,
+    alignItems: "center",
   },
   dropdownList: {
+    width: "89%",
     backgroundColor: "white",
     borderRadius: 5,
     padding: 10,
@@ -362,7 +379,6 @@ const styles = StyleSheet.create({
     padding: 9,
     marginLeft: 10,
     marginBottom: 5,
-    // Schatten für den Button
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
@@ -387,7 +403,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
     marginTop: 20,
-    // Schatten für den Save-Button
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
@@ -398,5 +413,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     fontFamily: "SpaceMono",
+  },
+  scrollContent: {
+    padding: 10,
   },
 });
