@@ -14,6 +14,7 @@ import { de } from "date-fns/locale";
 import { useUserStore } from "./userStore";
 import { useAuthStore } from "./authStore";
 import { collection, doc, addDoc, deleteDoc, getDocs, getDoc, updateDoc } from "firebase/firestore";
+import { onSnapshot, Unsubscribe } from "firebase/firestore";
 
 /*
  defining the event type
@@ -80,7 +81,8 @@ type EventStore = {
     overallRating: number
   ) => Promise<void>;
   isRatedUser: (eventId: string, groupId: string) => Promise<boolean>;
-  loadEventDetails: (groupId: string, eventId: string) => Promise<void>;
+  loadEventDetails: (groupId: string, eventId: string) => Promise<void | Unsubscribe>;
+
   addGame: (groupId: string, eventId: string, newGame: string) => Promise<void>;
   addFood: (groupId: string, eventId: string, newFood: string) => Promise<void>;
   vote: (groupId: string, eventId: string, category: "games" | "food", index: number) => Promise<void>;
@@ -293,30 +295,38 @@ export const useEventStore = create<EventStore>((set, get) => ({
   in Objekte um, um Abstimmungsinformationen einzubinden.
   - gina
   */
-  loadEventDetails: async (groupId: string, eventId: string) => {
+  
+  loadEventDetails: async (groupId: string, eventId: string): Promise<void | Unsubscribe> => {
     try {
       const eventRef = doc(db, `groups/${groupId}/events`, eventId);
-      const eventSnap = await getDoc(eventRef);
-      if (eventSnap.exists()) {
-        const eventData = eventSnap.data();
-        const transformItems = (items: any): EventItem[] =>
-          items.map((item: any) =>
-            typeof item === "string"
-              ? { name: item, votes: 0, votedBy: [] }
-              : item
-          );
-        const currentEvent: EventDetails = {
-          id: eventSnap.id,
-          host: eventData.host,
-          date: eventData.date,
-          time: eventData.time,
-          groupId: eventData.groupId,
-          completed: eventData.completed,
-          games: transformItems(eventData.games || []),
-          food: transformItems(eventData.food || []),
-        };
-        set({ currentEvent });
-      }
+  
+      const unsubscribe: Unsubscribe = onSnapshot(eventRef, (eventSnap) => {
+        if (eventSnap.exists()) {
+          const eventData = eventSnap.data();
+          const transformItems = (items: any): EventItem[] =>
+            items.map((item: any) =>
+              typeof item === "string"
+                ? { name: item, votes: 0, votedBy: [] }
+                : item
+            );
+  
+          const currentEvent: EventDetails = {
+            id: eventSnap.id,
+            host: eventData.host,
+            date: eventData.date,
+            time: eventData.time,
+            groupId: eventData.groupId,
+            completed: eventData.completed,
+            games: transformItems(eventData.games || []),
+            food: transformItems(eventData.food || []),
+          };
+  
+          set({ currentEvent });
+        }
+      });
+
+      // Optional: Speichere das unsubscribe, um den Listener beim Verlassen des Screens zu entfernen
+      return unsubscribe;
     } catch (error) {
       console.error("Error loading event details:", error);
     }

@@ -1,20 +1,12 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  SafeAreaView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  FlatList,
-  Platform,
-} from "react-native";
+import {View, SafeAreaView, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Platform,} from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { AntDesign } from "@expo/vector-icons";
 import { useAuthStore } from "../stores/authStore";
 import CustomText from "../components/CustomText";
 import { useEventStore } from "../stores/eventStore";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { Unsubscribe } from "firebase/firestore"; 
 
 export default function EventDetailsScreen() {
   const navigation = useNavigation();
@@ -33,10 +25,20 @@ export default function EventDetailsScreen() {
   const [newFood, setNewFood] = useState("");
 
   useEffect(() => {
-    if (userId) {
-      loadEventDetails(groupId, eventId);
-    }
+    let unsubscribe: Unsubscribe | undefined;
+    (async () => {
+      if (userId) {
+        unsubscribe = (await loadEventDetails(groupId, eventId)) as Unsubscribe | undefined;
+      }
+    })();
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, [eventId, groupId, userId]);
+  
+  
 
   const userVotedGame = currentEvent?.games.some((item) => item.votedBy.includes(userId));
   const userVotedFood = currentEvent?.food.some((item) => item.votedBy.includes(userId));

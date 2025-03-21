@@ -21,7 +21,7 @@ import LogoutScreen from "@/screens/Authentication/Logout";
 import RateEventScreen from "@/screens/RateEvent";
 
 
-// --- RootStackParamList (NEU: Definiert alle möglichen Routen + Parameter) ---
+//  RootStackParamList  
 export type RootStackParamList = {
   Main: undefined;
   CreateGroup: undefined;
@@ -55,15 +55,15 @@ function MainDrawer() {
         drawerActiveTintColor: "#C7E850",
         drawerInactiveTintColor: "#ccc",
         drawerStyle: { backgroundColor: "#5B7F78" },
-        drawerActiveBackgroundColor: "#5B7F78", // z.B. dunkleres Grün
+        drawerActiveBackgroundColor: "#5B7F78",   
         drawerItemStyle: {
-          borderRadius: 10, // Rundung
-          marginHorizontal: 10, // etwas Abstand vom Rand
+          borderRadius: 10, 
+          marginHorizontal: 10, 
         },
     
         drawerLabelStyle: {
-          fontFamily: "SpaceMono", // Schriftart
-          fontSize: 19,           // optional
+          fontFamily: "SpaceMono", 
+          fontSize: 19,           
         },
       }}
     >
