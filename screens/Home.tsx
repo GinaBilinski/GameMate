@@ -50,7 +50,7 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
           hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
           <Ionicons name="menu" size={28} color="#C7E850" />
         </TouchableOpacity>
-        <CustomText style={styles.title}>Gruppenübersicht</CustomText>
+        <CustomText style={styles.title}>Gruppen</CustomText>
         <TouchableOpacity onPress={() => navigation.navigate("CreateGroup")} style={styles.plusButton}
           hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}>
           <Ionicons name="add-circle-outline" size={28} color="#C7E850" />

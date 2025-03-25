@@ -90,7 +90,7 @@ export default function CreateEventScreen() {
         >
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
-        <CustomText style={styles.title}>Event Planen</CustomText>
+        <CustomText style={styles.title}>Event planen</CustomText>
       </View>
 
       {/* Scrollbarer Bereich für den restlichen Inhalt */}
